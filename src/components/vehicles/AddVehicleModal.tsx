@@ -1,17 +1,36 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Car, Calendar, DollarSign, FileText, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createVehicle } from '@/app/actions/vehicles';
+import { createVehicle, updateVehicle, uploadVehicleImage } from '@/app/actions/vehicles';
 import { useRouter } from 'next/navigation';
 import { VEHICLE_TYPE_OPTIONS, POWERTRAIN_OPTIONS } from '@/lib/maintenance';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { ErrorModal } from '@/components/ui/ErrorModal';
 
 interface AddVehicleModalProps {
   isOpen: boolean;
   onClose: () => void;
+  mode?: 'create' | 'edit';
+  vehicle?: EditableVehicle | null;
+  onSaved?: (vehicle: any) => void;
+}
+
+interface EditableVehicle {
+  id: string;
+  make: string;
+  model: string;
+  year: number;
+  plate_number?: string | null;
+  color?: string | null;
+  vehicle_type?: string | null;
+  powertrain?: string | null;
+  transmission?: string | null;
+  current_mileage?: number | null;
+  purchase_date?: string | null;
+  purchase_price?: number | null;
+  notes?: string | null;
+  image_url?: string | null;
 }
 
 interface VehicleFormData {
@@ -31,6 +50,103 @@ interface VehicleFormData {
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 50 }, (_, i) => (currentYear - i).toString());
+const MAX_VEHICLE_IMAGE_SIZE_MB = Number(process.env.NEXT_PUBLIC_VEHICLE_IMAGE_MAX_SIZE_MB ?? 5);
+const MAX_VEHICLE_IMAGE_SIZE_BYTES = MAX_VEHICLE_IMAGE_SIZE_MB * 1024 * 1024;
+const MAX_RAW_IMAGE_SIZE_MB = Number(process.env.NEXT_PUBLIC_VEHICLE_IMAGE_RAW_MAX_SIZE_MB ?? 30);
+const MAX_RAW_IMAGE_SIZE_BYTES = MAX_RAW_IMAGE_SIZE_MB * 1024 * 1024;
+const MAX_IMAGE_DIMENSION_PX = Number(process.env.NEXT_PUBLIC_VEHICLE_IMAGE_MAX_DIMENSION_PX ?? 1920);
+
+function getOptimizedMimeType(fileType: string): 'image/jpeg' | 'image/png' | 'image/webp' {
+  if (fileType === 'image/png') return 'image/png';
+  if (fileType === 'image/webp') return 'image/webp';
+  return 'image/jpeg';
+}
+
+function getFileExtensionFromMimeType(mimeType: string): string {
+  if (mimeType === 'image/png') return 'png';
+  if (mimeType === 'image/webp') return 'webp';
+  return 'jpg';
+}
+
+function loadImageFromFile(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Could not load image.'));
+    };
+
+    image.src = objectUrl;
+  });
+}
+
+function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  mimeType: 'image/jpeg' | 'image/png' | 'image/webp',
+  quality?: number
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('Failed to process image.'));
+          return;
+        }
+        resolve(blob);
+      },
+      mimeType,
+      quality
+    );
+  });
+}
+
+async function optimizeImageForUpload(file: File): Promise<File> {
+  // Canvas processing strips GIF animation, so keep GIFs unchanged.
+  if (file.type === 'image/gif') {
+    return file;
+  }
+
+  const image = await loadImageFromFile(file);
+  const largestSide = Math.max(image.width, image.height);
+  const scale = largestSide > MAX_IMAGE_DIMENSION_PX ? MAX_IMAGE_DIMENSION_PX / largestSide : 1;
+  const width = Math.max(1, Math.round(image.width * scale));
+  const height = Math.max(1, Math.round(image.height * scale));
+  const mimeType = getOptimizedMimeType(file.type);
+  const supportsQuality = mimeType !== 'image/png';
+
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  if (!context) {
+    throw new Error('Could not initialize image optimization.');
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+  context.drawImage(image, 0, 0, width, height);
+
+  let quality = 0.9;
+  let blob = await canvasToBlob(canvas, mimeType, supportsQuality ? quality : undefined);
+
+  while (supportsQuality && blob.size > MAX_VEHICLE_IMAGE_SIZE_BYTES && quality > 0.45) {
+    quality -= 0.1;
+    blob = await canvasToBlob(canvas, mimeType, quality);
+  }
+
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'vehicle-image';
+  const extension = getFileExtensionFromMimeType(mimeType);
+  return new File([blob], `${baseName}-optimized.${extension}`, {
+    type: mimeType,
+    lastModified: Date.now(),
+  });
+}
 
 const transmissionTypes = ['Automatic', 'Manual', 'CVT', 'Semi-Automatic'];
 
@@ -40,12 +156,15 @@ const popularMakes = [
   'Jeep', 'Ram', 'GMC', 'Dodge', 'Lexus', 'Acura', 'Volvo', 'Other'
 ];
 
-export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
+export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = null, onSaved }: AddVehicleModalProps) {
   const router = useRouter();
+  const isEditMode = mode === 'edit' && !!vehicle?.id;
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageRemoved, setImageRemoved] = useState(false);
   const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({
     isOpen: false,
     message: ''
@@ -58,6 +177,46 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
 
   const [errors, setErrors] = useState<Partial<Record<keyof VehicleFormData, string>>>({});
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    if (isEditMode && vehicle) {
+      setCurrentStep(1);
+      setFormData({
+        make: vehicle.make ?? '',
+        model: vehicle.model ?? '',
+        year: vehicle.year ? String(vehicle.year) : '',
+        licensePlate: vehicle.plate_number ?? '',
+        color: vehicle.color ?? '',
+        vehicleType: vehicle.vehicle_type ?? '',
+        fuelType: vehicle.powertrain ?? '',
+        transmission: vehicle.transmission ?? '',
+        currentMileage: vehicle.current_mileage != null ? String(vehicle.current_mileage) : '',
+        purchaseDate: vehicle.purchase_date ?? '',
+        purchasePrice: vehicle.purchase_price != null ? String(vehicle.purchase_price) : '',
+        notes: vehicle.notes ?? '',
+      });
+      setImagePreview(vehicle.image_url ?? null);
+      setImageFile(null);
+      setImageRemoved(false);
+      setErrors({});
+      return;
+    }
+
+    setCurrentStep(1);
+    setFormData({
+      make: '', model: '', year: '', licensePlate: '', color: '',
+      vehicleType: '', fuelType: '', transmission: '',
+      currentMileage: '', purchaseDate: '', purchasePrice: '', notes: ''
+    });
+    setImageFile(null);
+    setImagePreview(null);
+    setImageRemoved(false);
+    setErrors({});
+  }, [isEditMode, isOpen, vehicle]);
+
   const handleInputChange = (field: keyof VehicleFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -65,38 +224,66 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file size (max 50MB)
-      if (file.size > 50 * 1024 * 1024) {
+      if (file.size > MAX_RAW_IMAGE_SIZE_BYTES) {
         setErrorModal({
           isOpen: true,
-          message: 'File size must be less than 50MB. Please select a smaller image.'
+          message: `Image is too large to process. Please choose an image under ${MAX_RAW_IMAGE_SIZE_MB}MB.`
         });
+        e.target.value = '';
         return;
       }
+
       // Validate file type
       if (!file.type.startsWith('image/')) {
         setErrorModal({
           isOpen: true,
           message: 'Please select a valid image file (PNG, JPG, JPEG, GIF, etc.).'
         });
+        e.target.value = '';
         return;
       }
-      setImageFile(file);
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+
+      try {
+        setIsProcessingImage(true);
+        const optimizedImage = await optimizeImageForUpload(file);
+
+        if (optimizedImage.size > MAX_VEHICLE_IMAGE_SIZE_BYTES) {
+          setErrorModal({
+            isOpen: true,
+            message: `Could not reduce image below ${MAX_VEHICLE_IMAGE_SIZE_MB}MB. Please choose a smaller image.`
+          });
+          e.target.value = '';
+          return;
+        }
+
+        setImageFile(optimizedImage);
+        setImageRemoved(false);
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(optimizedImage);
+      } catch (error) {
+        console.error('Image optimization failed:', error);
+        setErrorModal({
+          isOpen: true,
+          message: 'Could not process this image. Please choose another file and try again.'
+        });
+        e.target.value = '';
+      } finally {
+        setIsProcessingImage(false);
+      }
     }
   };
 
   const removeImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setImageRemoved(true);
   };
 
   const validateStep = (step: number): boolean => {
@@ -130,69 +317,124 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
 
     setLoading(true);
     
-    let imageUrl: string | undefined = undefined;
+    let imageUrl: string | null | undefined = isEditMode ? (vehicle?.image_url ?? null) : undefined;
 
     // Upload image if one was selected
     if (imageFile) {
       try {
-        const supabase = createSupabaseBrowserClient();
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `vehicle-images/${fileName}`;
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', imageFile);
 
-        const { error: uploadError } = await supabase.storage
-          .from('vehicles')
-          .upload(filePath, imageFile);
+        const uploadResult = await uploadVehicleImage(uploadFormData);
 
-        if (uploadError) {
-          console.error('Error uploading image:', uploadError);
+        if (uploadResult.error) {
+          console.error('Error uploading image:', uploadResult.error);
           setErrorModal({
             isOpen: true,
-            message: 'Failed to upload image. The vehicle will be added without a photo.'
+            message: `Failed to upload image. The vehicle will be ${isEditMode ? 'updated' : 'added'} without changing the photo.`
           });
         } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from('vehicles')
-            .getPublicUrl(filePath);
-          imageUrl = publicUrl;
+          imageUrl = uploadResult.data?.displayUrl ?? uploadResult.data?.publicUrl;
         }
       } catch (error) {
         console.error('Unexpected error uploading image:', error);
         setErrorModal({
           isOpen: true,
-          message: 'An unexpected error occurred while uploading the image. The vehicle will be added without a photo.'
+          message: `An unexpected error occurred while uploading the image. The vehicle will be ${isEditMode ? 'updated' : 'added'} without changing the photo.`
         });
       }
     }
 
-    const result = await createVehicle({
-      make: formData.make,
-      model: formData.model,
-      year: parseInt(formData.year),
-      licensePlate: formData.licensePlate || undefined,
-      color: formData.color || undefined,
-      vehicleType: formData.vehicleType || undefined,
-      powertrain: formData.fuelType || undefined,
-      currentMileage: formData.currentMileage ? parseInt(formData.currentMileage) : undefined,
-      purchaseDate: formData.purchaseDate || undefined,
-      purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : undefined,
-      notes: formData.notes || undefined,
-      imageUrl,
-    });
+    if (isEditMode && imageRemoved && !imageFile) {
+      imageUrl = null;
+    }
 
-    setLoading(false);
+    try {
+      const result = isEditMode && vehicle
+        ? await updateVehicle({
+            id: vehicle.id,
+            make: formData.make,
+            model: formData.model,
+            year: parseInt(formData.year),
+            licensePlate: formData.licensePlate || undefined,
+            color: formData.color || undefined,
+            vehicleType: formData.vehicleType || undefined,
+            powertrain: formData.fuelType || undefined,
+          transmission: formData.transmission || undefined,
+            currentMileage: formData.currentMileage ? parseInt(formData.currentMileage) : undefined,
+            purchaseDate: formData.purchaseDate || undefined,
+            purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : undefined,
+            notes: formData.notes || undefined,
+            imageUrl,
+          })
+        : await createVehicle({
+            make: formData.make,
+            model: formData.model,
+            year: parseInt(formData.year),
+            licensePlate: formData.licensePlate || undefined,
+            color: formData.color || undefined,
+            vehicleType: formData.vehicleType || undefined,
+            powertrain: formData.fuelType || undefined,
+          transmission: formData.transmission || undefined,
+            currentMileage: formData.currentMileage ? parseInt(formData.currentMileage) : undefined,
+            purchaseDate: formData.purchaseDate || undefined,
+            purchasePrice: formData.purchasePrice ? parseFloat(formData.purchasePrice) : undefined,
+            notes: formData.notes || undefined,
+            imageUrl: imageUrl ?? undefined,
+          });
 
-    if (result.error) {
-      setErrors({ make: result.error });
-    } else {
+      if (result.error) {
+        setErrorModal({
+          isOpen: true,
+          message: result.error,
+        });
+        return;
+      }
+
+      if (result.data && onSaved) {
+        const savedVehicle = {
+          ...(vehicle ?? {}),
+          ...result.data,
+          make: formData.make,
+          model: formData.model,
+          year: parseInt(formData.year),
+          plate_number: formData.licensePlate || null,
+          color: formData.color || null,
+          vehicle_type: formData.vehicleType || null,
+          powertrain: formData.fuelType || null,
+          transmission: formData.transmission || null,
+          current_mileage: formData.currentMileage ? parseInt(formData.currentMileage) : null,
+          purchase_date: formData.purchaseDate || null,
+          purchase_price: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
+          notes: formData.notes || null,
+        } as any;
+
+        onSaved({
+          ...savedVehicle,
+          image_url:
+            savedVehicle.image_url ??
+            savedVehicle.photo_url ??
+            savedVehicle.image ??
+            imageUrl ??
+            null,
+        });
+      }
+
       router.refresh();
       handleClose();
+    } catch (error) {
+      console.error(`Failed to ${isEditMode ? 'update' : 'create'} vehicle:`, error);
+      setErrorModal({
+        isOpen: true,
+        message: `An unexpected error occurred while ${isEditMode ? 'updating' : 'adding'} the vehicle. Please try again.`
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -203,20 +445,25 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
       vehicleType: '', fuelType: '', transmission: '',
       currentMileage: '', purchaseDate: '', purchasePrice: '', notes: ''
     });
+    setImageFile(null);
+    setImagePreview(null);
+    setImageRemoved(false);
+    setLoading(false);
+    setIsProcessingImage(false);
     setErrors({});
     onClose();
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <>
           {/* Backdrop with blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleClose}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
@@ -226,13 +473,12 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
-            onClick={(e) => e.target === e.currentTarget && handleClose()}
           >
             <div className="bg-[#262626] border border-[#3A3A3A] rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-[#3A3A3A]">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Add New Vehicle</h2>
+                  <h2 className="text-2xl font-bold text-white">{isEditMode ? 'Edit Vehicle' : 'Add New Vehicle'}</h2>
                   <p className="text-sm text-[#B0B0B0] mt-1">
                     Step {currentStep} of 3: {
                       currentStep === 1 ? 'Basic Information' :
@@ -264,7 +510,7 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
               </div>
 
               {/* Form */}
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={(e) => e.preventDefault()}>
                 <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
                   {/* Step 1: Basic Information */}
                   {currentStep === 1 && (
@@ -569,9 +815,15 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
                               Click to upload or drag and drop
                             </p>
                             <p className="text-xs text-[#B0B0B0] mt-1">
-                              PNG, JPG up to 5MB
+                              PNG, JPG up to {MAX_VEHICLE_IMAGE_SIZE_MB}MB after automatic optimization
+                            </p>
+                            <p className="text-xs text-[#B0B0B0] mt-1">
+                              Raw file processing limit: {MAX_RAW_IMAGE_SIZE_MB}MB
                             </p>
                           </label>
+                        )}
+                        {isProcessingImage && (
+                          <p className="text-xs text-[#B0B0B0] mt-2">Optimizing image for upload...</p>
                         )}
                       </div>
                     </motion.div>
@@ -607,11 +859,12 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
                       </button>
                     ) : (
                       <button
-                        type="submit"
-                        disabled={loading}
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={loading || isProcessingImage}
                         className="px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {loading ? 'Adding...' : 'Add Vehicle'}
+                        {loading ? (isEditMode ? 'Saving...' : 'Adding...') : (isEditMode ? 'Save Vehicle' : 'Add Vehicle')}
                       </button>
                     )}
                   </div>
@@ -619,8 +872,9 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
               </form>
             </div>
           </motion.div>
-        </>
-      )}
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Error Modal */}
       <ErrorModal
@@ -629,6 +883,6 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
         message={errorModal.message}
         onClose={() => setErrorModal({ isOpen: false, message: '' })}
       />
-    </AnimatePresence>
+    </>
   );
 }

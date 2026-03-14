@@ -33,3 +33,32 @@ input, select, textarea {
 label {
   @apply text-sm text-textSecondary font-medium;
 }
+
+.autocare-maintenance-glow {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: min(44vw, 520px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(211, 47, 47, 0.14) 0%, rgba(211, 47, 47, 0.03) 45%, transparent 72%);
+  filter: blur(8px);
+  opacity: 0.36;
+}
+
+.autocare-maintenance-symbol {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: clamp(130px, 12vw, 190px);
+  aspect-ratio: 1;
+  opacity: 0.19;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .autocare-maintenance-symbol {
+    transform: translate(-50%, -50%) !important;
+  }
+}

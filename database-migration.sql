@@ -10,7 +10,13 @@
 ALTER TABLE vehicles
 ADD COLUMN IF NOT EXISTS vehicle_type TEXT NOT NULL DEFAULT 'sedan',
 ADD COLUMN IF NOT EXISTS powertrain TEXT NOT NULL DEFAULT 'gasoline',
-ADD COLUMN IF NOT EXISTS current_mileage INTEGER;
+ADD COLUMN IF NOT EXISTS color TEXT,
+ADD COLUMN IF NOT EXISTS transmission TEXT,
+ADD COLUMN IF NOT EXISTS current_mileage INTEGER,
+ADD COLUMN IF NOT EXISTS purchase_date DATE,
+ADD COLUMN IF NOT EXISTS purchase_price NUMERIC(12,2),
+ADD COLUMN IF NOT EXISTS notes TEXT,
+ADD COLUMN IF NOT EXISTS image_url TEXT;
 
 -- Add check constraints for valid values
 ALTER TABLE vehicles
@@ -20,6 +26,19 @@ CHECK (vehicle_type IN ('sedan', 'hatchback', 'suv', 'pickup', 'van', 'hybrid', 
 ALTER TABLE vehicles
 ADD CONSTRAINT vehicles_powertrain_check 
 CHECK (powertrain IN ('gasoline', 'diesel', 'hybrid', 'electric'));
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'vehicles_transmission_check'
+  ) THEN
+    ALTER TABLE vehicles
+    ADD CONSTRAINT vehicles_transmission_check
+    CHECK (transmission IN ('Automatic', 'Manual', 'CVT', 'Semi-Automatic'));
+  END IF;
+END $$;
 
 -- Add index for faster queries
 CREATE INDEX IF NOT EXISTS idx_vehicles_vehicle_type ON vehicles(vehicle_type);
@@ -93,7 +112,13 @@ ON reminders(vehicle_id, is_completed, due_date);
 
 COMMENT ON COLUMN vehicles.vehicle_type IS 'Vehicle classification: sedan, hatchback, suv, pickup, van, hybrid, ev';
 COMMENT ON COLUMN vehicles.powertrain IS 'Engine/powertrain type: gasoline, diesel, hybrid, electric';
+COMMENT ON COLUMN vehicles.color IS 'Vehicle exterior color';
+COMMENT ON COLUMN vehicles.transmission IS 'Transmission type: Automatic, Manual, CVT, Semi-Automatic';
 COMMENT ON COLUMN vehicles.current_mileage IS 'Current odometer reading in kilometers';
+COMMENT ON COLUMN vehicles.purchase_date IS 'Vehicle purchase date';
+COMMENT ON COLUMN vehicles.purchase_price IS 'Vehicle purchase price';
+COMMENT ON COLUMN vehicles.notes IS 'Freeform notes about the vehicle';
+COMMENT ON COLUMN vehicles.image_url IS 'Public or signed URL for the vehicle profile image stored in Supabase Storage';
 
 COMMENT ON COLUMN maintenance_logs.service_category IS 'Standardized maintenance category (oil-change, tire-rotation, etc.)';
 COMMENT ON COLUMN maintenance_logs.next_due_date IS 'Calculated next service due date';
