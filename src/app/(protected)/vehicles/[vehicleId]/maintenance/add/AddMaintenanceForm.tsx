@@ -97,7 +97,7 @@ export function AddMaintenanceForm({ vehicleId }: Props) {
             />
           </FormField>
 
-          <FormField label="Cost ($)" htmlFor="cost">
+          <FormField label="Cost (₱)" htmlFor="cost">
             <Input
               id="cost"
               name="cost"

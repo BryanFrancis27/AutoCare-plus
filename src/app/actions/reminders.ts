@@ -2,7 +2,7 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Reminder } from "@/types";
-import { isMaintenanceOverdue, calculateDaysUntilDue } from "@/lib/maintenance";
+import { calculateDaysUntilDue, calculateNextDue, getMaintenanceCategoryById } from "@/lib/maintenance";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -26,6 +26,33 @@ export interface CreateReminderInput {
 
 export interface UpdateReminderInput extends CreateReminderInput {
   id: string;
+}
+
+export interface ReminderModalData {
+  reminder: Reminder;
+  vehicle: {
+    id: string;
+    make: string;
+    model: string;
+    year: number;
+    displayName: string;
+    plateNumber: string | null;
+    currentMileage: number | null;
+    lastServiceDate: string | null;
+    imageUrl: string | null;
+  } | null;
+}
+
+function getVehicleDisplayName(vehicle?: {
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+  plate_number?: string | null;
+} | null): string | undefined {
+  if (!vehicle) return undefined;
+
+  const fullName = [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ").trim();
+  return fullName || vehicle.plate_number || undefined;
 }
 
 /**
@@ -58,6 +85,7 @@ export async function getAllReminders(): Promise<{
       id: record.id,
       userId: record.user_id,
       vehicleId: record.vehicle_id,
+      vehicleName: getVehicleDisplayName(record.vehicles),
       title: record.title,
       reminderType: record.reminder_type || record.title,
       serviceCategory: record.service_category,
@@ -111,6 +139,7 @@ export async function getRemindersForVehicle(
       id: record.id,
       userId: record.user_id,
       vehicleId: record.vehicle_id,
+      vehicleName: getVehicleDisplayName(record.vehicles),
       title: record.title,
       reminderType: record.reminder_type || record.title,
       serviceCategory: record.service_category,
@@ -172,6 +201,7 @@ export async function getUpcomingReminders(): Promise<{
       id: record.id,
       userId: record.user_id,
       vehicleId: record.vehicle_id,
+      vehicleName: getVehicleDisplayName(record.vehicles),
       title: record.title,
       reminderType: record.reminder_type || record.title,
       serviceCategory: record.service_category,
@@ -299,6 +329,100 @@ export async function getReminderById(
     };
 
     return { data: reminder, error: null };
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return { data: null, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Get reminder data with live vehicle details for modal display.
+ */
+export async function getReminderModalData(
+  id: string
+): Promise<{ data: ReminderModalData | null; error: string | null }> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { data: null, error: "Unauthorized" };
+    }
+
+    const { data: reminderRow, error: reminderError } = await supabase
+      .from("reminders")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (reminderError) {
+      return { data: null, error: reminderError.message };
+    }
+
+    const reminder: Reminder = {
+      id: reminderRow.id,
+      userId: reminderRow.user_id,
+      vehicleId: reminderRow.vehicle_id,
+      title: reminderRow.title,
+      reminderType: reminderRow.reminder_type || reminderRow.title,
+      serviceCategory: reminderRow.service_category,
+      description: reminderRow.description || "",
+      dueDate: reminderRow.due_date,
+      dueMileage: reminderRow.due_mileage,
+      priority: reminderRow.priority,
+      timeIntervalMonths: reminderRow.time_interval_months,
+      mileageIntervalKm: reminderRow.mileage_interval_km,
+      status: reminderRow.status,
+      isCompleted: reminderRow.is_completed,
+      notes: reminderRow.notes,
+      createdAt: reminderRow.created_at,
+      updatedAt: reminderRow.updated_at,
+    };
+
+    const vehicleId = reminderRow.vehicle_id;
+    if (!vehicleId) {
+      return { data: { reminder, vehicle: null }, error: null };
+    }
+
+    const [{ data: vehicleRow, error: vehicleError }, { data: latestService }] = await Promise.all([
+      supabase
+        .from("vehicles")
+        .select("*")
+        .eq("id", vehicleId)
+        .eq("user_id", user.id)
+        .single(),
+      supabase
+        .from("maintenance_logs")
+        .select("service_date")
+        .eq("vehicle_id", vehicleId)
+        .eq("user_id", user.id)
+        .order("service_date", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    if (vehicleError) {
+      return { data: null, error: vehicleError.message };
+    }
+
+    return {
+      data: {
+        reminder,
+        vehicle: {
+          id: vehicleRow.id,
+          make: vehicleRow.make,
+          model: vehicleRow.model,
+          year: vehicleRow.year,
+          displayName: getVehicleDisplayName(vehicleRow) || "Unknown vehicle",
+          plateNumber: vehicleRow.plate_number ?? null,
+          currentMileage: vehicleRow.current_mileage ?? null,
+          lastServiceDate: latestService?.service_date ?? null,
+          imageUrl: vehicleRow.image_url ?? vehicleRow.photo_url ?? vehicleRow.image ?? null,
+        },
+      },
+      error: null,
+    };
   } catch (err) {
     console.error("Unexpected error:", err);
     return { data: null, error: "An unexpected error occurred" };
@@ -477,6 +601,123 @@ export async function completeReminder(
 
     revalidatePath("/reminders");
     revalidatePath("/dashboard");
+
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return { success: false, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Complete a reminder and optionally create a service history entry.
+ */
+export async function completeReminderWithServiceLog(
+  id: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const { data: reminder, error: reminderError } = await supabase
+      .from("reminders")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (reminderError || !reminder) {
+      return { success: false, error: reminderError?.message || "Reminder not found" };
+    }
+
+    if (!reminder.is_completed) {
+      const { error: completeError } = await supabase
+        .from("reminders")
+        .update({
+          is_completed: true,
+          status: "completed",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (completeError) {
+        return { success: false, error: completeError.message };
+      }
+    }
+
+    const hasVehicle = Boolean(reminder.vehicle_id);
+    const hasCategory = typeof reminder.service_category === "string" && reminder.service_category.length > 0;
+
+    if (hasVehicle && hasCategory) {
+      const { data: vehicle } = await supabase
+        .from("vehicles")
+        .select("current_mileage")
+        .eq("id", reminder.vehicle_id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const serviceDate = new Date().toISOString().split("T")[0];
+      const mileage = vehicle?.current_mileage ?? reminder.due_mileage ?? 0;
+      const category = getMaintenanceCategoryById(reminder.service_category);
+
+      let nextDueDate: string | undefined;
+      let nextDueMileage: number | undefined;
+      const priority = category?.priority ?? reminder.priority ?? "medium";
+
+      if (category) {
+        const nextDue = calculateNextDue(serviceDate, mileage, {
+          timeIntervalMonths: category.defaultTimeIntervalMonths,
+          mileageIntervalKm: category.defaultMileageIntervalKm,
+        });
+        nextDueDate = nextDue.nextDueDate;
+        nextDueMileage = nextDue.nextDueMileage;
+      }
+
+      await supabase.from("maintenance_logs").insert({
+        user_id: user.id,
+        vehicle_id: reminder.vehicle_id,
+        service_type: reminder.reminder_type || reminder.title || "Maintenance",
+        service_category: reminder.service_category,
+        service_date: serviceDate,
+        mileage,
+        cost: 0,
+        notes: reminder.notes || "Completed from reminder modal.",
+        next_due_date: nextDueDate,
+        next_due_mileage: nextDueMileage,
+        priority,
+      });
+
+      if (category && (nextDueDate || nextDueMileage)) {
+        await supabase.from("reminders").insert({
+          user_id: user.id,
+          vehicle_id: reminder.vehicle_id,
+          title: `${category.name} Due`,
+          reminder_type: category.name,
+          service_category: reminder.service_category,
+          description: `Next ${category.name.toLowerCase()} is due based on your last service.`,
+          due_date: nextDueDate,
+          due_mileage: nextDueMileage,
+          priority,
+          time_interval_months: category.defaultTimeIntervalMonths,
+          mileage_interval_km: category.defaultMileageIntervalKm,
+          status: "upcoming",
+          is_completed: false,
+        });
+      }
+    }
+
+    revalidatePath("/reminders");
+    revalidatePath("/dashboard");
+    revalidatePath("/vehicles");
+    if (reminder.vehicle_id) {
+      revalidatePath(`/vehicles/${reminder.vehicle_id}`);
+      revalidatePath(`/vehicles/${reminder.vehicle_id}/maintenance`);
+    }
 
     return { success: true, error: null };
   } catch (err) {

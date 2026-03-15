@@ -11,9 +11,24 @@ interface DialogProps {
   title?: string;
   children: ReactNode;
   showCloseButton?: boolean;
+  size?: "md" | "lg" | "xl" | "full";
 }
 
-export function Dialog({ isOpen, onClose, title, children, showCloseButton = true }: DialogProps) {
+const sizeClasses: Record<NonNullable<DialogProps["size"]>, string> = {
+  md: "max-w-md",
+  lg: "max-w-2xl",
+  xl: "max-w-4xl",
+  full: "max-w-6xl h-[90vh]",
+};
+
+export function Dialog({
+  isOpen,
+  onClose,
+  title,
+  children,
+  showCloseButton = true,
+  size = "md",
+}: DialogProps) {
   const [mounted, setMounted] = useState(false);
 
   // Ensure portal only renders on client after mount
@@ -64,7 +79,7 @@ export function Dialog({ isOpen, onClose, title, children, showCloseButton = tru
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="bg-containerBg rounded-2xl shadow-2xl border border-grayBorder max-w-md w-full max-h-[90vh] overflow-y-auto"
+              className={`bg-containerBg rounded-2xl shadow-2xl border border-grayBorder w-full ${size === "full" ? "flex flex-col overflow-hidden" : "overflow-y-auto"} ${sizeClasses[size]} ${size !== "full" ? "max-h-[90vh]" : ""}`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -84,7 +99,7 @@ export function Dialog({ isOpen, onClose, title, children, showCloseButton = tru
               )}
 
               {/* Content */}
-              <div className="px-6 py-4">{children}</div>
+              <div className={`px-6 py-4 ${size === "full" ? "flex-1 min-h-0" : ""}`}>{children}</div>
             </motion.div>
           </div>
         </>

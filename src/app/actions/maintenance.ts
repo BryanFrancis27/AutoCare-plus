@@ -25,6 +25,14 @@ export interface UpdateMaintenanceInput extends CreateMaintenanceInput {
   id: string;
 }
 
+export interface ServiceHistoryEntry {
+  id: string;
+  serviceType: string;
+  serviceDate: string;
+  notes: string | null;
+  cost: number;
+}
+
 /**
  * Get all maintenance records for a vehicle
  */
@@ -71,6 +79,47 @@ export async function getMaintenanceRecords(
     }));
 
     return { data: records, error: null };
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return { data: null, error: "An unexpected error occurred" };
+  }
+}
+
+/**
+ * Get complete service history for a vehicle in chronological order.
+ */
+export async function getVehicleServiceHistory(
+  vehicleId: string
+): Promise<{ data: ServiceHistoryEntry[] | null; error: string | null }> {
+  try {
+    const supabase = createSupabaseServerClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { data: null, error: "Unauthorized" };
+    }
+
+    const { data, error } = await supabase
+      .from("maintenance_logs")
+      .select("id, service_type, service_date, notes, cost")
+      .eq("vehicle_id", vehicleId)
+      .eq("user_id", user.id)
+      .order("service_date", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching service history:", error);
+      return { data: null, error: error.message };
+    }
+
+    const history: ServiceHistoryEntry[] = (data ?? []).map((record) => ({
+      id: record.id,
+      serviceType: record.service_type,
+      serviceDate: record.service_date,
+      notes: record.notes ?? null,
+      cost: record.cost ?? 0,
+    }));
+
+    return { data: history, error: null };
   } catch (err) {
     console.error("Unexpected error:", err);
     return { data: null, error: "An unexpected error occurred" };
@@ -209,6 +258,30 @@ export async function createMaintenanceRecord(
       });
     }
 
+    // Auto-complete the closest related pending reminder when maintenance is logged.
+    const { data: relatedReminder } = await supabase
+      .from("reminders")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("vehicle_id", input.vehicleId)
+      .eq("service_category", input.serviceCategory)
+      .eq("is_completed", false)
+      .order("due_date", { ascending: true, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (relatedReminder?.id) {
+      await supabase
+        .from("reminders")
+        .update({
+          is_completed: true,
+          status: "completed",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", relatedReminder.id)
+        .eq("user_id", user.id);
+    }
+
     const record: MaintenanceRecord = {
       id: data.id,
       userId: data.user_id,
@@ -229,6 +302,7 @@ export async function createMaintenanceRecord(
 
     revalidatePath(`/vehicles/${input.vehicleId}`);
     revalidatePath(`/vehicles/${input.vehicleId}/maintenance`);
+    revalidatePath("/reminders");
     revalidatePath("/dashboard");
 
     return { data: record, error: null };

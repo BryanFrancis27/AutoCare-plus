@@ -31,7 +31,7 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  const classes = `${variantClasses[variant]} ${className}`.trim();
+  const classes = `autocare-button ${variantClasses[variant]} ${className}`.trim();
 
   if ("href" in props && props.href) {
     const { href, ...linkProps } = props;

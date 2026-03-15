@@ -69,7 +69,7 @@ export function UpcomingReminders({ reminders, loading = false }: UpcomingRemind
                 transition={{ delay: index * 0.05 }}
               >
                 <Link
-                  href={`/reminders/${reminder.id}`}
+                  href="/reminders"
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-darkBg transition-colors border-b border-grayBorder last:border-0"
                 >
                   <div className="flex items-start gap-3 flex-1 min-w-0">

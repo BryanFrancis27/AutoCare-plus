@@ -47,6 +47,7 @@ export interface Reminder {
   id: string;
   userId: string; // Maps to user_id in database
   vehicleId: string;
+  vehicleName?: string;
   title?: string; // Existing field in database
   reminderType: string;
   serviceCategory: string;

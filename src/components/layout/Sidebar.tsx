@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Car, Bell, DollarSign, User } from "lucide-react";
+import { LayoutDashboard, Car, Bell, User } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/vehicles", label: "Vehicles", icon: Car },
   { href: "/reminders", label: "Reminders", icon: Bell },
-  { href: "/expenses", label: "Expenses", icon: DollarSign },
   { href: "/profile", label: "Profile", icon: User },
 ];
 
@@ -49,10 +48,10 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`autocare-button flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ease-out ${
                     isActive
                       ? "bg-redPrimary text-whitePure"
-                      : "text-whitePure hover:bg-containerBg"
+                      : "text-whitePure"
                   }`}
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />

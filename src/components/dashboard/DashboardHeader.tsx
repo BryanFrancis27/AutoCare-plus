@@ -23,7 +23,7 @@ export function DashboardHeader({
         <div className="flex items-center gap-4">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden p-2 hover:bg-[#262626] rounded-lg transition-colors"
+            className="autocare-button lg:hidden p-2 rounded-lg transition-all duration-200 ease-out"
             aria-label="Toggle menu"
           >
             <Menu className="w-5 h-5 text-white" />

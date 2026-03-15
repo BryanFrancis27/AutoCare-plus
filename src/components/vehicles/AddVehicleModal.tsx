@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { X, Car, Calendar, DollarSign, FileText, Upload } from 'lucide-react';
+import { X, Car, Calendar, FileText, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createVehicle, updateVehicle, uploadVehicleImage } from '@/app/actions/vehicles';
 import { useRouter } from 'next/navigation';
@@ -725,7 +725,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                     >
                       <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 rounded-lg bg-[#D32F2F]/10 flex items-center justify-center">
-                          <DollarSign className="w-5 h-5 text-[#D32F2F]" />
+                          <span className="text-[#D32F2F] font-semibold text-lg leading-none">₱</span>
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-white">Additional Information</h3>
@@ -753,16 +753,16 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                         {/* Purchase Price */}
                         <div>
                           <label className="block text-sm text-[#B0B0B0] mb-2">
-                            Purchase Price
+                            Purchase Price (₱)
                           </label>
                           <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B0B0B0]" />
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B0B0B0] font-semibold">₱</span>
                             <input
                               type="text"
                               value={formData.purchasePrice}
                               onChange={(e) => handleInputChange('purchasePrice', e.target.value)}
                               placeholder="25000"
-                              className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg pl-11 pr-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all"
+                              className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg pl-9 pr-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all"
                             />
                           </div>
                         </div>

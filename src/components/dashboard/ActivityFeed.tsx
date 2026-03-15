@@ -1,9 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Wrench, Bell, DollarSign, Car, Clock } from 'lucide-react';
-import Link from 'next/link';
+import { Wrench, Bell, DollarSign, Car, Clock, Edit, Trash2 } from 'lucide-react';
 import { ActivityItem } from '@/app/actions/dashboard-metrics';
+import { LoadingState } from '@/components/ui';
 
 interface ActivityFeedProps {
   activities: ActivityItem[];
@@ -11,26 +11,25 @@ interface ActivityFeedProps {
   maxItems?: number;
 }
 
-// Helper function to format relative time
 const formatRelativeTime = (date: Date): string => {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffHours < 1) return 'Just now';
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays === 1) return '1 day ago';
   if (diffDays < 7) return `${diffDays} days ago`;
   if (diffDays < 30) {
     const weeks = Math.floor(diffDays / 7);
     return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
   }
+
   const months = Math.floor(diffDays / 30);
   return `${months} month${months > 1 ? 's' : ''} ago`;
 };
 
-// Get icon and colors based on activity type
 const getActivityIcon = (type: ActivityItem['type']) => {
   switch (type) {
     case 'maintenance':
@@ -41,41 +40,29 @@ const getActivityIcon = (type: ActivityItem['type']) => {
       return { Icon: DollarSign, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
     case 'vehicle_added':
       return { Icon: Car, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
+    case 'vehicle_edited':
+      return { Icon: Edit, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
+    case 'vehicle_deleted':
+      return { Icon: Trash2, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
     default:
       return { Icon: Clock, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
   }
 };
 
-const ActivitySkeleton = () => (
-  <div className="animate-pulse bg-darkBg rounded-lg p-4">
-    <div className="flex gap-4">
-      <div className="w-12 h-12 rounded-full bg-grayBorder"></div>
-      <div className="flex-1 space-y-2">
-        <div className="h-5 bg-grayBorder rounded w-2/3"></div>
-        <div className="h-4 bg-grayBorder rounded w-1/2"></div>
-      </div>
-    </div>
-  </div>
-);
-
-export function ActivityFeed({ activities, loading = false, maxItems = 5 }: ActivityFeedProps) {
+export function ActivityFeed({ activities, loading = false, maxItems = 3 }: ActivityFeedProps) {
   const displayActivities = activities.slice(0, maxItems);
 
   return (
     <div className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-6">
       <h3 className="text-lg font-semibold text-whitePure mb-4">Recent Activity</h3>
-      
+
       {loading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <ActivitySkeleton key={index} />
-          ))}
-        </div>
+        <LoadingState mode="container" label="Loading recent activity..." className="min-h-[220px]" />
       ) : displayActivities.length > 0 ? (
         <div className="space-y-4">
           {displayActivities.map((activity, index) => {
             const { Icon, bgColor, iconColor } = getActivityIcon(activity.type);
-            
+
             return (
               <motion.div
                 key={activity.id}
@@ -86,18 +73,14 @@ export function ActivityFeed({ activities, loading = false, maxItems = 5 }: Acti
               >
                 <div className="flex items-start gap-4">
                   <div className={`${bgColor} p-3 rounded-full flex-shrink-0`}>
-                    <Icon className={`h-6 w-6 ${iconColor}`} />
+                    <Icon className={`h-5 w-5 ${iconColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-1">
                       <div className="flex-1">
-                        <h4 className="font-semibold text-whitePure">
-                          {activity.description}
-                        </h4>
+                        <h4 className="font-semibold text-whitePure">{activity.description}</h4>
                         {activity.vehicleName && (
-                          <p className="text-sm text-textSecondary mt-1">
-                            {activity.vehicleName}
-                          </p>
+                          <p className="text-sm text-textSecondary mt-0.5">{activity.vehicleName}</p>
                         )}
                       </div>
                       <span className="text-xs text-textSecondary flex-shrink-0 ml-2">

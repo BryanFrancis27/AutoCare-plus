@@ -10,16 +10,49 @@ body {
   @apply bg-darkBg text-textPrimary antialiased;
 }
 
+/* Prevent caret rendering on non-editable UI elements (e.g., cards, buttons, containers). */
+*:not(input):not(textarea):not([contenteditable="true"]) {
+  caret-color: transparent;
+}
+
+/* Keep typing caret available for actual form controls and explicitly editable content. */
+input,
+textarea,
+[contenteditable="true"] {
+  caret-color: auto;
+}
+
 a {
   @apply text-redPrimary hover:text-redPrimaryHover transition-colors;
 }
 
+.autocare-button {
+  @apply transition-all duration-200 ease-out;
+}
+
+.autocare-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.45);
+}
+
 .button-primary {
-  @apply inline-flex items-center justify-center rounded-md bg-redPrimary px-4 py-2 text-whitePure font-medium shadow-sm hover:bg-redPrimaryHover transition-colors;
+  @apply autocare-button inline-flex items-center justify-center rounded-md bg-redPrimary px-4 py-2 text-whitePure font-medium shadow-sm;
+}
+
+.button-primary:hover {
+  @apply text-whitePure;
 }
 
 .button-secondary {
-  @apply inline-flex items-center justify-center rounded-md border border-redPrimary px-4 py-2 text-redPrimary font-medium hover:bg-redMuted/10 transition-colors;
+  @apply autocare-button inline-flex items-center justify-center rounded-md border border-redPrimary px-4 py-2 text-redPrimary font-medium;
+}
+
+.button-secondary:hover {
+  @apply text-redPrimary;
+}
+
+button:not(:disabled) {
+  @apply autocare-button;
 }
 
 .card {
@@ -57,7 +90,83 @@ label {
   will-change: transform;
 }
 
+.autocare-wrench-spin {
+  animation: autocare-wrench-spin 1.8s linear infinite;
+}
+
+.autocare-wheel-spin {
+  animation: autocare-wheel-spin 0.9s linear infinite;
+}
+
+.autocare-road-line {
+  background-image: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.12) 18%, transparent 36%);
+  animation: autocare-road-shift 3.4s linear infinite;
+}
+
+.autocare-road-glow {
+  background-image: linear-gradient(to right, transparent 0%, rgba(211, 47, 47, 0.14) 20%, transparent 40%);
+  animation: autocare-road-glow-shift 4.8s linear infinite;
+}
+
+.autocare-road-dashes {
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent 12px,
+    rgba(255, 255, 255, 0.22) 12px,
+    rgba(255, 255, 255, 0.22) 22px
+  );
+  animation: autocare-road-shift 2.2s linear infinite;
+}
+
+@keyframes autocare-wrench-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes autocare-road-shift {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-56px);
+  }
+}
+
+@keyframes autocare-road-glow-shift {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-42px);
+  }
+}
+
+@keyframes autocare-wheel-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .autocare-wrench-spin {
+    animation: none;
+  }
+
+  .autocare-road-line,
+  .autocare-road-glow,
+  .autocare-road-dashes,
+  .autocare-wheel-spin {
+    animation: none;
+  }
+
   .autocare-maintenance-symbol {
     transform: translate(-50%, -50%) !important;
   }

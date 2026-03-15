@@ -17,7 +17,7 @@ export function LogoutButton() {
       <button
         type="button"
         onClick={() => setShowLogoutModal(true)}
-        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-grayLight hover:bg-blackSoft"
+        className="autocare-button w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ease-out text-grayLight"
       >
         <LogOut className="h-5 w-5 flex-shrink-0" />
         <span className="font-medium">Logout</span>

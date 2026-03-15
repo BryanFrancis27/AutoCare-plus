@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { Car, Plus, Calendar, Wrench, Pencil, Trash2, Eye } from "lucide-react";
 import { AddVehicleModal } from "@/components/vehicles/AddVehicleModal";
-import { Dialog } from "@/components/ui";
+import { LogMaintenanceModal } from "@/components/maintenance/LogMaintenanceModal";
+import { Dialog, LoadingState } from "@/components/ui";
 import { deleteVehicle } from "@/app/actions/vehicles";
 import { useRouter } from "next/navigation";
+import { formatCurrencyPHP } from "@/lib/currency";
+import { getVehicleServiceHistory, type ServiceHistoryEntry } from "@/app/actions/maintenance";
+import { formatDueDate } from "@/lib/maintenance";
 
 type VehicleListItem = {
   id: string;
@@ -38,12 +41,49 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
   const [vehicleToView, setVehicleToView] = useState<VehicleListItem | null>(null);
   const [vehicleToEdit, setVehicleToEdit] = useState<VehicleListItem | null>(null);
   const [vehicleToDelete, setVehicleToDelete] = useState<VehicleListItem | null>(null);
+  const [vehicleToLogMaintenance, setVehicleToLogMaintenance] = useState<VehicleListItem | null>(null);
+  const [historyVehicle, setHistoryVehicle] = useState<VehicleListItem | null>(null);
+  const [historyEntries, setHistoryEntries] = useState<ServiceHistoryEntry[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     setLocalVehicles(vehicles);
   }, [vehicles]);
+
+  const expenseSummary = useMemo(() => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    return historyEntries.reduce(
+      (totals, entry) => {
+        const cost = Number(entry.cost) || 0;
+        const dateParts = entry.serviceDate.split("-").map(Number);
+        const serviceDate =
+          dateParts.length >= 3
+            ? new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
+            : new Date(entry.serviceDate);
+
+        if (Number.isNaN(serviceDate.getTime())) {
+          return totals;
+        }
+
+        if (serviceDate.getFullYear() === currentYear) {
+          totals.yearlyTotal += cost;
+
+          if (serviceDate.getMonth() === currentMonth) {
+            totals.monthlyTotal += cost;
+          }
+        }
+
+        return totals;
+      },
+      { monthlyTotal: 0, yearlyTotal: 0 }
+    );
+  }, [historyEntries]);
 
   const normalizeVehicle = (vehicle: any): VehicleListItem => ({
     id: vehicle.id,
@@ -91,6 +131,27 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
     setLocalVehicles((prev) => prev.filter((vehicle) => vehicle.id !== vehicleToDelete.id));
     setVehicleToDelete(null);
     router.refresh();
+  };
+
+  const openServiceHistory = async (vehicle: VehicleListItem) => {
+    setHistoryVehicle(vehicle);
+    setHistoryEntries([]);
+    setHistoryError(null);
+    setIsHistoryLoading(true);
+
+    const result = await getVehicleServiceHistory(vehicle.id);
+    setIsHistoryLoading(false);
+
+    if (result.error) {
+      setHistoryError(result.error);
+      return;
+    }
+
+    setHistoryEntries(result.data ?? []);
+  };
+
+  const openLogMaintenance = (vehicle: VehicleListItem) => {
+    setVehicleToLogMaintenance(vehicle);
   };
 
   return (
@@ -217,20 +278,22 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                  <Link
-                    href={`/vehicles/${vehicle.id}/maintenance`}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#1D1D1C] hover:bg-[#D32F2F] text-white px-4 py-2 rounded-lg transition-colors border border-[#3A3A3A]"
+                  <button
+                    type="button"
+                    onClick={() => openServiceHistory(vehicle)}
+                    className="autocare-button flex-1 flex items-center justify-center gap-2 bg-[#1D1D1C] text-white px-4 py-2 rounded-lg transition-all duration-200 ease-out border border-[#3A3A3A]"
                   >
                     <Wrench className="w-4 h-4" />
-                    Service History
-                  </Link>
-                  <Link
-                    href={`/vehicles/${vehicle.id}/reminders/add`}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white px-4 py-2 rounded-lg transition-colors"
+                    Service & Expenses
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openLogMaintenance(vehicle)}
+                    className="autocare-button flex-1 flex items-center justify-center gap-2 bg-[#D32F2F] text-white px-4 py-2 rounded-lg transition-all duration-200 ease-out"
                   >
                     <Calendar className="w-4 h-4" />
-                    Schedule
-                  </Link>
+                    Log Maintenance
+                  </button>
                 </div>
               </div>
             ))}
@@ -309,7 +372,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
               <div className="bg-[#1D1D1C] rounded-lg p-3">
                 <p className="text-[#B0B0B0]">Purchase Price</p>
                 <p className="text-white font-medium">
-                  {vehicleToView.purchase_price != null ? `$${vehicleToView.purchase_price.toLocaleString()}` : "Not set"}
+                  {vehicleToView.purchase_price != null ? formatCurrencyPHP(vehicleToView.purchase_price) : "Not set"}
                 </p>
               </div>
             </div>
@@ -331,6 +394,95 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
           </div>
         )}
       </Dialog>
+
+      <Dialog
+        isOpen={Boolean(historyVehicle)}
+        onClose={() => setHistoryVehicle(null)}
+        title={historyVehicle ? `${historyVehicle.year} ${historyVehicle.make} ${historyVehicle.model} Service & Expenses` : "Service & Expenses"}
+        size="full"
+      >
+        <div className="space-y-4">
+          {isHistoryLoading && (
+            <LoadingState mode="container" label="Loading service history..." className="min-h-[220px]" />
+          )}
+
+          {historyError && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-4 text-sm">
+              {historyError}
+            </div>
+          )}
+
+          {!isHistoryLoading && !historyError && (
+            <div className="space-y-5">
+              <section className="space-y-3">
+                <h3 className="text-base font-semibold text-white">Service History</h3>
+
+                {historyEntries.length === 0 && (
+                  <div className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-xl p-6 text-center">
+                    <p className="text-[#B0B0B0] text-sm">No service history yet for this vehicle.</p>
+                  </div>
+                )}
+
+                {historyEntries.length > 0 && (
+                  <div className="space-y-3 max-h-[52vh] overflow-y-auto pr-1">
+                    {historyEntries.map((entry) => (
+                      <div key={entry.id} className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-xl p-4">
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                          <div>
+                            <p className="text-white font-semibold">{entry.serviceType}</p>
+                            <p className="text-sm text-[#B0B0B0] mt-1">Date: {formatDueDate(entry.serviceDate)}</p>
+                            <p className="text-sm text-[#B0B0B0] mt-1">Cost: {formatCurrencyPHP(entry.cost)}</p>
+                          </div>
+                          <p className="text-sm text-white md:text-right">{entry.notes || "No notes"}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="space-y-3">
+                <h3 className="text-base font-semibold text-white">Expenses Summary</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-xl p-4">
+                    <p className="text-sm text-[#B0B0B0]">Monthly Expenses</p>
+                    <p className="text-xl font-semibold text-white mt-1">{formatCurrencyPHP(expenseSummary.monthlyTotal)}</p>
+                  </div>
+                  <div className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-xl p-4">
+                    <p className="text-sm text-[#B0B0B0]">Yearly Expenses</p>
+                    <p className="text-xl font-semibold text-white mt-1">{formatCurrencyPHP(expenseSummary.yearlyTotal)}</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setHistoryVehicle(null)}
+              className="px-4 py-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-lg transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+      <LogMaintenanceModal
+        isOpen={Boolean(vehicleToLogMaintenance)}
+        onClose={() => setVehicleToLogMaintenance(null)}
+        onSuccess={() => {
+          setVehicleToLogMaintenance(null);
+          router.refresh();
+        }}
+        title={vehicleToLogMaintenance ? `Log Maintenance: ${vehicleToLogMaintenance.year} ${vehicleToLogMaintenance.make} ${vehicleToLogMaintenance.model}` : "Log Maintenance"}
+        vehicle={vehicleToLogMaintenance ? {
+          id: vehicleToLogMaintenance.id,
+          label: `${vehicleToLogMaintenance.year} ${vehicleToLogMaintenance.make} ${vehicleToLogMaintenance.model}`,
+          currentMileage: vehicleToLogMaintenance.current_mileage,
+        } : null}
+      />
 
       <Dialog
         isOpen={Boolean(vehicleToDelete)}

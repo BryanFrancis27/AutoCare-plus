@@ -2,6 +2,7 @@ import { Button, Card } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { getMaintenanceRecords } from "@/app/actions/maintenance";
 import { formatDueDate, formatMileage, getPriorityColor } from "@/lib/maintenance";
+import { formatCurrencyPHP } from "@/lib/currency";
 
 type Props = { params: { vehicleId: string } };
 
@@ -56,7 +57,7 @@ export default async function MaintenanceLogsPage({ params }: Props) {
                     </div>
                     <div>
                       <div className="text-xs text-textSecondary">Cost</div>
-                      <div className="text-sm font-medium">${record.cost.toFixed(2)}</div>
+                      <div className="text-sm font-medium">{formatCurrencyPHP(record.cost)}</div>
                     </div>
                     {record.nextDueDate && (
                       <div>

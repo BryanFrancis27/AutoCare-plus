@@ -1,6 +1,7 @@
 'use server';
 
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { formatCurrencyPHP } from '@/lib/currency';
 
 // ===========================
 // TypeScript Interfaces
@@ -17,7 +18,7 @@ export interface DashboardMetrics {
 
 export interface ActivityItem {
   id: string;
-  type: 'maintenance' | 'reminder' | 'expense' | 'vehicle_added';
+  type: 'maintenance' | 'reminder' | 'expense' | 'vehicle_added' | 'vehicle_edited' | 'vehicle_deleted';
   description: string;
   timestamp: Date;
   vehicleName?: string;
@@ -229,7 +230,7 @@ export async function fetchRecentActivities(
       activities.push({
         id: `expense-${expense.id}`,
         type: 'expense',
-        description: `${expense.description} - $${expense.amount}`,
+        description: `${expense.description} - ${formatCurrencyPHP(expense.amount)}`,
         timestamp: new Date(expense.date),
         vehicleName: vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : undefined,
         vehicleId: expense.vehicle_id,

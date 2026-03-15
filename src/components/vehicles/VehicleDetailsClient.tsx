@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/layout";
 import { AddReminderModal } from "@/components/reminders/AddReminderModal";
 import { formatMileage, formatDueDate, getPriorityColor } from "@/lib/maintenance";
 import { MaintenancePriority } from "@/types";
+import { formatCurrencyPHP } from "@/lib/currency";
 
 type Vehicle = {
   id: string;
@@ -116,7 +117,7 @@ export function VehicleDetailsClient({ vehicle, stats, upcomingReminders }: Prop
                 </div>
                 <div>
                   <dt className="text-xs text-textSecondary">Total Spent</dt>
-                  <dd className="text-2xl font-bold text-textPrimary">${stats.totalCost.toFixed(2)}</dd>
+                  <dd className="text-2xl font-bold text-textPrimary">{formatCurrencyPHP(stats.totalCost)}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-textSecondary">Upcoming Services</dt>

@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import { LoadingState } from '@/components/ui';
 
 interface MetricCardProps {
   label: string;
@@ -8,19 +9,12 @@ interface MetricCardProps {
   loading?: boolean;
 }
 
-const MetricSkeleton = () => (
-  <div className="animate-pulse">
-    <div className="h-4 w-24 bg-grayBorder rounded mb-2"></div>
-    <div className="h-8 w-16 bg-grayBorder rounded"></div>
-  </div>
-);
-
 export function MetricCard({ label, value, icon: Icon, iconBgColor, loading = false }: MetricCardProps) {
   return (
     <div className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-6">
       <div className="flex items-center justify-between">
         {loading ? (
-          <MetricSkeleton />
+          <LoadingState mode="inline" label={`Loading ${label.toLowerCase()}...`} />
         ) : (
           <div>
             <p className="text-sm font-medium text-textSecondary">{label}</p>
