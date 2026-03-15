@@ -287,8 +287,9 @@ function ReminderDetailsDialog({
         )}
 
         {modalData && !isModalLoading && (
-          <div className="grid flex-1 min-h-0 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-            <div className="min-h-[280px] overflow-hidden rounded-xl border border-grayBorder bg-darkBg">
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+            <div className="grid min-h-0 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+              <div className="min-h-[280px] overflow-hidden rounded-xl border border-grayBorder bg-darkBg">
               {modalData.vehicle?.imageUrl ? (
                 <div className="relative h-full min-h-[280px] w-full">
                   <Image
@@ -314,10 +315,10 @@ function ReminderDetailsDialog({
                   </div>
                 </div>
               )}
-            </div>
+              </div>
 
-            <div className="grid min-h-0 gap-4 lg:grid-rows-2">
-              <div className="rounded-xl border border-grayBorder bg-darkBg p-5">
+              <div className="grid min-h-0 gap-4">
+                <div className="rounded-xl border border-grayBorder bg-darkBg p-5">
                 <div className="mb-4 flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-redPrimary" />
                   <h3 className="text-base font-semibold text-whitePure">Maintenance Information</h3>
@@ -341,9 +342,9 @@ function ReminderDetailsDialog({
                     </p>
                   </div>
                 </div>
-              </div>
+                </div>
 
-              <div className="rounded-xl border border-grayBorder bg-darkBg p-5">
+                <div className="rounded-xl border border-grayBorder bg-darkBg p-5">
                 <div className="mb-4 flex items-center gap-2">
                   <GaugeCircle className="h-4 w-4 text-redPrimary" />
                   <h3 className="text-base font-semibold text-whitePure">Vehicle Information</h3>
@@ -379,12 +380,13 @@ function ReminderDetailsDialog({
                     <p className="text-sm text-textSecondary">Vehicle information is not available for this reminder.</p>
                   </div>
                 )}
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        <div className="flex justify-end gap-2 border-t border-grayBorder pt-4">
+        <div className="shrink-0 flex justify-end gap-2 border-t border-grayBorder pt-4">
           <button
             type="button"
             onClick={onClose}

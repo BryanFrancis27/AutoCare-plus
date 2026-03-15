@@ -5,6 +5,7 @@ import { X, Bell, Calendar, FileText, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { createReminder } from '@/app/actions/reminders';
+import { LoadingState } from '@/components/ui/LoadingState';
 
 interface AddReminderModalProps {
   isOpen: boolean;
@@ -60,6 +61,7 @@ const priorityLevels = [
 
 export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: AddReminderModalProps) {
   const router = useRouter();
+  const loadingLabel = 'Creating reminder...';
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<ReminderFormData>({
     title: '',
@@ -151,7 +153,11 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleClose}
+            onClick={() => {
+              if (!loading) {
+                handleClose();
+              }
+            }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
@@ -161,9 +167,18 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
-            onClick={(e) => e.target === e.currentTarget && handleClose()}
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !loading) {
+                handleClose();
+              }
+            }}
           >
-            <div className="bg-[#262626] border border-[#3A3A3A] rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
+            <div className="relative bg-[#262626] border border-[#3A3A3A] rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
+              {loading && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/45 backdrop-blur-sm">
+                  <LoadingState mode="container" label={loadingLabel} className="min-h-[220px] w-[min(92%,460px)]" />
+                </div>
+              )}
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-[#3A3A3A]">
                 <div>
@@ -174,6 +189,7 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
                 </div>
                 <button
                   onClick={handleClose}
+                  disabled={loading}
                   className="p-2 hover:bg-[#3A3A3A] rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5 text-white" />
@@ -353,7 +369,8 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="px-6 py-3 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors"
+                    disabled={loading}
+                    className="px-6 py-3 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -362,7 +379,7 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
                     disabled={loading}
                     className="px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? 'Creating...' : 'Create Reminder'}
+                    {loading ? loadingLabel : 'Create Reminder'}
                   </button>
                 </div>
               </form>

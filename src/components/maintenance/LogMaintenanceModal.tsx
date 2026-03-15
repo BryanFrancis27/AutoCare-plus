@@ -34,6 +34,7 @@ export function LogMaintenanceModal({
   vehicle,
   title,
 }: LogMaintenanceModalProps) {
+  const savingLabel = 'Saving maintenance record...';
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -153,6 +154,9 @@ export function LogMaintenanceModal({
   };
 
   const handleClose = () => {
+    if (saving) {
+      return;
+    }
     setError(null);
     onClose();
   };
@@ -166,7 +170,11 @@ export function LogMaintenanceModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000]"
-            onClick={handleClose}
+            onClick={() => {
+              if (!saving) {
+                handleClose();
+              }
+            }}
           />
           <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4">
             <motion.div
@@ -174,9 +182,14 @@ export function LogMaintenanceModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-2xl shadow-2xl w-full max-w-lg"
+              className="relative bg-[#1D1D1C] border border-[#3A3A3A] rounded-2xl shadow-2xl w-full max-w-lg"
               onClick={(e) => e.stopPropagation()}
             >
+              {saving && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/45 backdrop-blur-sm">
+                  <LoadingState mode="container" label={savingLabel} className="min-h-[200px] w-[min(92%,420px)]" />
+                </div>
+              )}
               <div className="flex items-center justify-between p-6 border-b border-[#3A3A3A]">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-redPrimary">
@@ -189,7 +202,8 @@ export function LogMaintenanceModal({
                 </div>
                 <button
                   onClick={handleClose}
-                  className="p-2 hover:bg-[#262626] rounded-lg transition-colors"
+                  disabled={saving}
+                  className="p-2 hover:bg-[#262626] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="h-5 w-5 text-textSecondary" />
                 </button>
@@ -330,7 +344,8 @@ export function LogMaintenanceModal({
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="flex-1 px-4 py-2.5 bg-[#262626] hover:bg-[#303030] text-whitePure text-sm font-medium rounded-lg transition-colors"
+                    disabled={saving}
+                    className="flex-1 px-4 py-2.5 bg-[#262626] hover:bg-[#303030] text-whitePure text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -339,7 +354,7 @@ export function LogMaintenanceModal({
                     disabled={saving || vehicles.length === 0}
                     className="flex-1 px-4 py-2.5 bg-redPrimary hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-whitePure text-sm font-medium rounded-lg transition-colors"
                   >
-                    {saving ? 'Saving...' : 'Log Maintenance'}
+                    {saving ? savingLabel : 'Log Maintenance'}
                   </button>
                 </div>
               </form>

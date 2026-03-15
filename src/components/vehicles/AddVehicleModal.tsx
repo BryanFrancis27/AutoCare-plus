@@ -7,6 +7,7 @@ import { createVehicle, updateVehicle, uploadVehicleImage } from '@/app/actions/
 import { useRouter } from 'next/navigation';
 import { VEHICLE_TYPE_OPTIONS, POWERTRAIN_OPTIONS } from '@/lib/maintenance';
 import { ErrorModal } from '@/components/ui/ErrorModal';
+import { LoadingState } from '@/components/ui/LoadingState';
 
 interface AddVehicleModalProps {
   isOpen: boolean;
@@ -159,6 +160,7 @@ const popularMakes = [
 export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = null, onSaved }: AddVehicleModalProps) {
   const router = useRouter();
   const isEditMode = mode === 'edit' && !!vehicle?.id;
+  const loadingLabel = isEditMode ? 'Saving vehicle...' : 'Adding vehicle...';
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -474,7 +476,12 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
           >
-            <div className="bg-[#262626] border border-[#3A3A3A] rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
+            <div className="relative bg-[#262626] border border-[#3A3A3A] rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
+              {loading && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/45 backdrop-blur-sm">
+                  <LoadingState mode="container" label={loadingLabel} className="min-h-[220px] w-[min(92%,460px)]" />
+                </div>
+              )}
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-[#3A3A3A]">
                 <div>
@@ -489,6 +496,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                 </div>
                 <button
                   onClick={handleClose}
+                  disabled={loading}
                   className="p-2 hover:bg-[#3A3A3A] rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5 text-white" />
@@ -835,7 +843,8 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="px-6 py-3 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors"
+                    disabled={loading}
+                    className="px-6 py-3 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -844,7 +853,8 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                       <button
                         type="button"
                         onClick={handleBack}
-                        className="px-6 py-3 bg-[#3A3A3A] text-white rounded-lg hover:bg-[#4A4A4A] transition-colors"
+                        disabled={loading}
+                        className="px-6 py-3 bg-[#3A3A3A] text-white rounded-lg hover:bg-[#4A4A4A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Back
                       </button>
@@ -853,7 +863,8 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                       <button
                         type="button"
                         onClick={handleNext}
-                        className="px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors"
+                        disabled={loading}
+                        className="px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Next
                       </button>
@@ -864,7 +875,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                         disabled={loading || isProcessingImage}
                         className="px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {loading ? (isEditMode ? 'Saving...' : 'Adding...') : (isEditMode ? 'Save Vehicle' : 'Add Vehicle')}
+                        {loading ? loadingLabel : (isEditMode ? 'Save Vehicle' : 'Add Vehicle')}
                       </button>
                     )}
                   </div>
