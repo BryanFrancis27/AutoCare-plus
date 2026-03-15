@@ -35,7 +35,7 @@ export function EditMaintenanceForm({ record }: Props) {
     };
 
     const result = await updateMaintenanceRecord(data);
-    
+
     if (result.error) {
       setError(result.error);
       setLoading(false);
@@ -46,13 +46,14 @@ export function EditMaintenanceForm({ record }: Props) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Card className="p-6 space-y-4">
+      <Card className="p-4 sm:p-6 space-y-4">
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
             {error}
           </div>
         )}
 
+        {/* Mobile adjustment: keep one-column inputs on phones and two columns from `sm` up */}
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Service Category" htmlFor="serviceCategory">
             <select
@@ -102,7 +103,7 @@ export function EditMaintenanceForm({ record }: Props) {
             />
           </FormField>
 
-          <FormField label="Cost (₱)" htmlFor="cost">
+          <FormField label="Cost (PHP)" htmlFor="cost">
             <Input
               id="cost"
               name="cost"
@@ -125,16 +126,18 @@ export function EditMaintenanceForm({ record }: Props) {
           />
         </FormField>
 
-        <div className="flex justify-end gap-3 pt-4">
+        {/* Mobile adjustment: stack primary/secondary actions for narrow screens */}
+        <div className="flex flex-col-reverse sm:flex-row justify-stretch sm:justify-end gap-3 pt-4">
           <Button
             type="button"
             variant="secondary"
             onClick={() => router.back()}
             disabled={loading}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? 'Updating...' : 'Update Record'}
           </Button>
         </div>
@@ -142,3 +145,4 @@ export function EditMaintenanceForm({ record }: Props) {
     </form>
   );
 }
+

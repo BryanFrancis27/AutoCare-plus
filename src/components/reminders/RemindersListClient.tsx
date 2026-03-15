@@ -125,9 +125,9 @@ function VehicleCatalogCard({ vehicle, onOpen }: VehicleCatalogCardProps) {
         </div>
       </div>
 
-      <div className="space-y-4 p-5">
+      <div className="space-y-4 p-4 sm:p-5">
         <div className="space-y-1">
-          <h3 className="text-xl font-semibold text-whitePure">{vehicle.displayName}</h3>
+          <h3 className="text-lg sm:text-xl font-semibold text-whitePure break-words">{vehicle.displayName}</h3>
           <p className="text-sm text-textSecondary">Model: {vehicle.model}</p>
           <p className="text-sm text-textSecondary">
             {vehicle.plate_number || "Plate number not added"}
@@ -386,11 +386,12 @@ function ReminderDetailsDialog({
           </div>
         )}
 
-        <div className="shrink-0 flex justify-end gap-2 border-t border-grayBorder pt-4">
+        {/* Mobile adjustment: stack dialog actions for better tap ergonomics */}
+        <div className="shrink-0 flex flex-col-reverse sm:flex-row justify-stretch sm:justify-end gap-2 border-t border-grayBorder pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-4 py-2 text-white transition-colors hover:bg-[#3A3A3A]"
+            className="w-full sm:w-auto rounded-lg px-4 py-2 text-white transition-colors hover:bg-[#3A3A3A]"
           >
             Close
           </button>
@@ -399,7 +400,7 @@ function ReminderDetailsDialog({
               type="button"
               onClick={onMarkDone}
               disabled={isCompleting}
-              className="rounded-lg bg-[#D32F2F] px-4 py-2 text-white transition-colors hover:bg-[#B71C1C] disabled:opacity-50"
+              className="w-full sm:w-auto rounded-lg bg-[#D32F2F] px-4 py-2 text-white transition-colors hover:bg-[#B71C1C] disabled:opacity-50"
             >
               {isCompleting ? "Updating..." : "Mark as DONE"}
             </button>
@@ -526,7 +527,7 @@ export function RemindersListClient({ initialReminders, initialVehicles, initial
 
   if (initialError) {
     return (
-      <main className="flex-1 px-6 py-8 space-y-4">
+      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-4">
         <PageHeader title="Reminders" description="Review reminders by vehicle." />
         <Card className="p-6">
           <p className="text-red-600">Error loading reminders: {initialError}</p>
@@ -537,7 +538,8 @@ export function RemindersListClient({ initialReminders, initialVehicles, initial
 
   return (
     <>
-      <main className="flex-1 px-6 py-8 space-y-6">
+      {/* Mobile adjustment: compact horizontal padding for phone widths */}
+      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-6">
         <PageHeader
           title="Service Reminders"
           description="Select a vehicle to review overdue, upcoming, and completed service reminders."
@@ -570,7 +572,7 @@ export function RemindersListClient({ initialReminders, initialVehicles, initial
 
         {initialVehicles.length > 0 && (
           <section className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-textPrimary">Vehicle Catalog</h2>
                 <p className="text-sm text-textSecondary">
@@ -583,7 +585,8 @@ export function RemindersListClient({ initialReminders, initialVehicles, initial
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            {/* Mobile adjustment: keep a single-column catalog on phones and move to two columns on tablets+ */}
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
               {vehicleSummaries.map((vehicle) => (
                 <VehicleCatalogCard
                   key={vehicle.id}
@@ -604,6 +607,7 @@ export function RemindersListClient({ initialReminders, initialVehicles, initial
       >
         {selectedVehicle && (
           <div className="flex h-full min-h-0 flex-col gap-6">
+            {/* Mobile adjustment: modal content stacks vertically before switching to split layout on desktop */}
             <div className="grid gap-4 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)]">
               <div className="overflow-hidden rounded-xl border border-grayBorder bg-darkBg">
                 {selectedVehicle.image_url ? (
@@ -627,7 +631,7 @@ export function RemindersListClient({ initialReminders, initialVehicles, initial
 
               <div className="space-y-4">
                 <Card className="p-5">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div>
                       <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Vehicle Overview</p>
                       <h3 className="mt-2 text-2xl font-semibold text-whitePure">{selectedVehicle.displayName}</h3>
@@ -702,3 +706,4 @@ export function RemindersListClient({ initialReminders, initialVehicles, initial
     </>
   );
 }
+

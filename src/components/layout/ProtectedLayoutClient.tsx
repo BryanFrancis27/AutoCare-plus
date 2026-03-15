@@ -22,10 +22,11 @@ export function ProtectedLayoutClient({ children, userName, userEmail }: Protect
         userEmail={userEmail}
       />
       
-      <div className="flex pt-16">
+      {/* Mobile adjustment: keep content full-width while sidebar overlays on smaller screens */}
+      <div className="flex pt-16 min-w-0">
         <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         
-        <main className="flex-1 lg:ml-64">
+        <main className="flex-1 lg:ml-64 min-w-0">
           {children}
         </main>
       </div>

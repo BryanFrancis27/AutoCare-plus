@@ -15,7 +15,7 @@ export default async function ConnectionCheckPage() {
     .limit(1);
 
   return (
-    <main className="p-6 space-y-4">
+    <main className="px-4 py-6 sm:px-6 sm:py-8 space-y-4">
       <h1 className="text-xl font-semibold">Supabase Connection Check</h1>
 
       <section className="space-y-1">
@@ -45,3 +45,4 @@ export default async function ConnectionCheckPage() {
     </main>
   );
 }
+

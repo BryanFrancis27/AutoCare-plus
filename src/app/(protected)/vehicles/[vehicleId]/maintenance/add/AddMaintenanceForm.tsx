@@ -33,7 +33,7 @@ export function AddMaintenanceForm({ vehicleId }: Props) {
     };
 
     const result = await createMaintenanceRecord(data);
-    
+
     if (result.error) {
       setError(result.error);
       setLoading(false);
@@ -44,13 +44,14 @@ export function AddMaintenanceForm({ vehicleId }: Props) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Card className="p-6 space-y-4">
+      <Card className="p-4 sm:p-6 space-y-4">
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
             {error}
           </div>
         )}
 
+        {/* Mobile adjustment: fields stay single-column on phones and split on tablets+ */}
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Service Category" htmlFor="serviceCategory">
             <select
@@ -97,7 +98,7 @@ export function AddMaintenanceForm({ vehicleId }: Props) {
             />
           </FormField>
 
-          <FormField label="Cost (₱)" htmlFor="cost">
+          <FormField label="Cost (PHP)" htmlFor="cost">
             <Input
               id="cost"
               name="cost"
@@ -118,16 +119,18 @@ export function AddMaintenanceForm({ vehicleId }: Props) {
           />
         </FormField>
 
-        <div className="flex justify-end gap-3 pt-4">
+        {/* Mobile adjustment: stack form actions for easier touch interaction */}
+        <div className="flex flex-col-reverse sm:flex-row justify-stretch sm:justify-end gap-3 pt-4">
           <Button
             type="button"
             variant="secondary"
             onClick={() => router.back()}
             disabled={loading}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? 'Saving...' : 'Save Maintenance Record'}
           </Button>
         </div>
@@ -135,3 +138,4 @@ export function AddMaintenanceForm({ vehicleId }: Props) {
     </form>
   );
 }
+

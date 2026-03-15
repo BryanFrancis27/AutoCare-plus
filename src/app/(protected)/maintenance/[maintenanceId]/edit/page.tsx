@@ -10,7 +10,7 @@ export default async function EditMaintenancePage({ params }: Props) {
 
   if (error || !record) {
     return (
-      <main className="flex-1 px-6 py-8 space-y-6">
+      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-6">
         <PageHeader
           title="Edit Maintenance"
           description="Update maintenance record"
@@ -23,7 +23,8 @@ export default async function EditMaintenancePage({ params }: Props) {
   }
 
   return (
-    <main className="flex-1 px-6 py-8 space-y-6">
+    // Mobile adjustment: match responsive spacing used across all protected screens.
+    <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-6">
       <PageHeader
         title="Edit Maintenance Record"
         description={`Update ${record.serviceType} record`}

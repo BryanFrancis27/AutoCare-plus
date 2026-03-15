@@ -178,7 +178,8 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    // Mobile adjustment: reduce horizontal padding on small screens and scale up progressively.
+    <div className="px-4 py-6 sm:px-6 sm:py-8 space-y-6">
       {/* Modals */}
       <AddVehicleModal
         isOpen={addVehicleOpen}
@@ -201,7 +202,7 @@ export default function DashboardPage() {
 
       {/* Page Title */}
       <div>
-        <h1 className="text-2xl font-bold text-whitePure">Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-whitePure">Dashboard</h1>
         <p className="text-textSecondary mt-1">
           Overview of your vehicles, recent activity, and reminders.
         </p>
@@ -254,7 +255,7 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-6"
+        className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-4 sm:p-6"
       >
         <h3 className="text-lg font-semibold text-whitePure mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -176,7 +176,8 @@ export function LogMaintenanceModal({
               }
             }}
           />
-          <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4">
+          {/* Mobile adjustment: tighter outer spacing for small devices */}
+          <div className="fixed inset-0 z-[1001] flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -190,7 +191,7 @@ export function LogMaintenanceModal({
                   <LoadingState mode="container" label={savingLabel} className="min-h-[200px] w-[min(92%,420px)]" />
                 </div>
               )}
-              <div className="flex items-center justify-between p-6 border-b border-[#3A3A3A]">
+              <div className="flex items-center justify-between gap-3 p-4 sm:p-6 border-b border-[#3A3A3A]">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-redPrimary">
                     <Wrench className="h-5 w-5 text-whitePure" />
@@ -209,7 +210,7 @@ export function LogMaintenanceModal({
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
                 {error && (
                   <div className="flex items-center gap-2 p-3 bg-redPrimary/10 border border-redPrimary/30 rounded-lg text-sm text-redPrimary">
                     <AlertCircle className="h-4 w-4 flex-shrink-0" />
@@ -284,7 +285,8 @@ export function LogMaintenanceModal({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Mobile adjustment: service date and mileage stack on phone screens */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-textSecondary uppercase tracking-wide mb-1.5">
                       Service Date
@@ -339,8 +341,7 @@ export function LogMaintenanceModal({
                     className="w-full px-3 py-2.5 bg-[#262626] border border-[#3A3A3A] rounded-lg text-whitePure text-sm placeholder-textSecondary focus:outline-none focus:border-redPrimary resize-none"
                   />
                 </div>
-
-                <div className="flex gap-3 pt-2">
+                <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
                   <button
                     type="button"
                     onClick={handleClose}

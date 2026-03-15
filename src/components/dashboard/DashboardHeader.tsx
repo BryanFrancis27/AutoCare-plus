@@ -18,7 +18,8 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-[#1D1D1C] border-b border-[#3A3A3A] z-50">
-      <div className="h-full px-6 flex items-center justify-between">
+      {/* Mobile adjustment: tighter horizontal spacing on phones */}
+      <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-3">
         {/* Left side */}
         <div className="flex items-center gap-4">
           <button
@@ -29,9 +30,9 @@ export function DashboardHeader({
             <Menu className="w-5 h-5 text-white" />
           </button>
           
-          <div className="flex items-center gap-0">
-            <span className="text-xl font-semibold text-white">AutoCare</span>
-            <span className="text-xl font-semibold text-[#D32F2F]">+</span>
+          <div className="flex items-center gap-0 min-w-0">
+            <span className="text-lg sm:text-xl font-semibold text-white truncate">AutoCare</span>
+            <span className="text-lg sm:text-xl font-semibold text-[#D32F2F]">+</span>
           </div>
         </div>
 
@@ -44,7 +45,8 @@ export function DashboardHeader({
             <span className="text-xs text-[#B0B0B0]">{userEmail || 'user@example.com'}</span>
           </div>
           
-          <div className="w-10 h-10 rounded-full bg-[#D32F2F] flex items-center justify-center">
+          {/* Mobile adjustment: slightly smaller avatar on very small screens */}
+          <div className="h-9 w-9 sm:w-10 sm:h-10 rounded-full bg-[#D32F2F] flex items-center justify-center shrink-0">
             <span className="text-white font-semibold">
               {userName ? userName.charAt(0).toUpperCase() : 'U'}
             </span>

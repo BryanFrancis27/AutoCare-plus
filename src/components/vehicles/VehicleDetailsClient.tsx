@@ -44,16 +44,17 @@ export function VehicleDetailsClient({ vehicle, stats, upcomingReminders }: Prop
 
   return (
     <>
-      <main className="flex-1 px-6 py-8 space-y-6">
+      {/* Mobile adjustment: adaptive spacing to avoid cramped layouts on phones */}
+      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-6">
         <PageHeader
           title={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
           description={vehicle.licensePlate || "No license plate"}
           actions={
             <>
-              <Button variant="secondary" href={`/vehicles/${vehicle.id}/edit`}>
+              <Button variant="secondary" href={`/vehicles/${vehicle.id}/edit`} className="w-full sm:w-auto">
                 Edit Vehicle
               </Button>
-              <Button href={`/vehicles/${vehicle.id}/maintenance/add`}>
+              <Button href={`/vehicles/${vehicle.id}/maintenance/add`} className="w-full sm:w-auto">
                 Log Maintenance
               </Button>
             </>
@@ -62,7 +63,7 @@ export function VehicleDetailsClient({ vehicle, stats, upcomingReminders }: Prop
 
         {/* Vehicle Information */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Card className="p-6">
+          <Card className="p-4 sm:p-6">
             <h2 className="font-semibold text-textPrimary mb-4">Vehicle Details</h2>
             <dl className="space-y-2">
               <div>
@@ -102,10 +103,11 @@ export function VehicleDetailsClient({ vehicle, stats, upcomingReminders }: Prop
             </dl>
           </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
+          <Card className="p-4 sm:p-6">
+            {/* Mobile adjustment: stack card heading and CTA before `sm` breakpoint */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
               <h2 className="font-semibold text-textPrimary">Maintenance Summary</h2>
-              <Button variant="secondary" href={`/vehicles/${vehicle.id}/maintenance`}>
+              <Button variant="secondary" href={`/vehicles/${vehicle.id}/maintenance`} className="w-full sm:w-auto">
                 View All
               </Button>
             </div>
@@ -129,12 +131,13 @@ export function VehicleDetailsClient({ vehicle, stats, upcomingReminders }: Prop
             )}
           </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
               <h2 className="font-semibold text-textPrimary">Upcoming Reminders</h2>
               <Button 
                 variant="secondary" 
                 onClick={() => setIsAddReminderModalOpen(true)}
+                className="w-full sm:w-auto"
               >
                 Add
               </Button>

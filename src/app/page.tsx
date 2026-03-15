@@ -10,7 +10,8 @@ export default function LandingPage() {
       <div className="relative z-10">
       {/* Header */}
       <header className="border-b border-[#3A3A3A]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        {/* Mobile adjustment: responsive container spacing for header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-0">
             <span className="text-2xl font-semibold text-white">AutoCare</span>
             <span className="text-2xl font-semibold text-[#D32F2F]">+</span>
@@ -19,11 +20,11 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-6 py-20 text-center">
-        <h1 className="text-5xl font-bold text-white mb-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20 text-center">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
           Track Your Vehicle Maintenance with Ease
         </h1>
-        <p className="text-xl text-[#B0B0B0] mb-8 max-w-2xl mx-auto">
+        <p className="text-base sm:text-lg lg:text-xl text-[#B0B0B0] mb-8 max-w-2xl mx-auto">
           Keep your vehicles in top shape with AutoCare+. Track maintenance, set reminders, 
           and manage expenses all in one place.
         </p>
@@ -36,8 +37,8 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <h2 className="text-3xl font-bold text-white text-center mb-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-10 sm:mb-12">
           Everything You Need to Maintain Your Vehicles
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -83,7 +84,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="max-w-7xl mx-auto px-6 py-8 text-center text-[#B0B0B0]">
+      <footer className="max-w-7xl mx-auto px-4 sm:px-6 py-8 text-center text-[#B0B0B0]">
         <p>© 2026 AutoCare+. All rights reserved.</p>
       </footer>
       </div>

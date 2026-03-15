@@ -474,7 +474,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
           >
             <div className="relative bg-[#262626] border border-[#3A3A3A] rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
               {loading && (
@@ -483,7 +483,8 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                 </div>
               )}
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-[#3A3A3A]">
+              {/* Mobile adjustment: prevent title/meta clipping with smaller header spacing */}
+              <div className="flex items-center justify-between gap-3 p-4 sm:p-6 border-b border-[#3A3A3A]">
                 <div>
                   <h2 className="text-2xl font-bold text-white">{isEditMode ? 'Edit Vehicle' : 'Add New Vehicle'}</h2>
                   <p className="text-sm text-[#B0B0B0] mt-1">
@@ -519,7 +520,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
 
               {/* Form */}
               <form onSubmit={(e) => e.preventDefault()}>
-                <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+                <div className="p-4 sm:p-6 space-y-6 max-h-[65vh] sm:max-h-[60vh] overflow-y-auto">
                   {/* Step 1: Basic Information */}
                   {currentStep === 1 && (
                     <motion.div
@@ -839,22 +840,23 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between gap-3 p-6 border-t border-[#3A3A3A]">
+                {/* Mobile adjustment: footer controls stack for reachability on phones */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 sm:p-6 border-t border-[#3A3A3A]">
                   <button
                     type="button"
                     onClick={handleClose}
                     disabled={loading}
-                    className="px-6 py-3 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-6 py-3 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     {currentStep > 1 && (
                       <button
                         type="button"
                         onClick={handleBack}
                         disabled={loading}
-                        className="px-6 py-3 bg-[#3A3A3A] text-white rounded-lg hover:bg-[#4A4A4A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto px-6 py-3 bg-[#3A3A3A] text-white rounded-lg hover:bg-[#4A4A4A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Back
                       </button>
@@ -864,7 +866,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                         type="button"
                         onClick={handleNext}
                         disabled={loading}
-                        className="px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Next
                       </button>
@@ -873,7 +875,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                         type="button"
                         onClick={handleSubmit}
                         disabled={loading || isProcessingImage}
-                        className="px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {loading ? loadingLabel : (isEditMode ? 'Save Vehicle' : 'Add Vehicle')}
                       </button>
@@ -897,3 +899,4 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
     </>
   );
 }
+

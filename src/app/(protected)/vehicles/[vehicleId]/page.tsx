@@ -19,7 +19,7 @@ export default async function VehicleDetailsPage({ params }: Props) {
 
   if (vehicleError || !vehicle) {
     return (
-      <main className="flex-1 px-6 py-8 space-y-4">
+      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-4">
         <PageHeader title="Vehicle Details" description="Loading..." />
         <Card className="p-6">
           <p className="text-red-600">Error loading vehicle: {vehicleError}</p>

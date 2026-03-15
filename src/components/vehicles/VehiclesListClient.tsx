@@ -156,15 +156,16 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
 
   return (
     <>
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      {/* Mobile adjustment: compact padding and stacked header actions on small screens */}
+      <div className="px-4 py-6 sm:px-6 sm:py-8 space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white mb-1">My Vehicles</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">My Vehicles</h1>
             <p className="text-[#B0B0B0]">Manage your vehicle fleet and track maintenance.</p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white px-4 py-2 rounded-lg transition-colors"
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white px-4 py-2 rounded-lg transition-colors"
           >
             <Plus className="w-5 h-5" />
             Add Vehicle
@@ -196,10 +197,11 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
             {localVehicles.map((vehicle) => (
               <div
                 key={vehicle.id}
-                className="bg-[#262626] border border-[#3A3A3A] rounded-xl p-6 shadow-lg"
+                className="bg-[#262626] border border-[#3A3A3A] rounded-xl p-4 sm:p-6 shadow-lg"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
+                {/* Mobile adjustment: card heading wraps with action group below on narrow widths */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+                  <div className="flex items-center gap-3 min-w-0">
                     {vehicle.image_url ? (
                       <Image
                         src={vehicle.image_url}
@@ -214,14 +216,14 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                         <Car className="w-6 h-6 text-white" />
                       </div>
                     )}
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">
+                    <div className="min-w-0">
+                      <h3 className="text-base sm:text-lg font-semibold text-white break-words">
                         {vehicle.year} {vehicle.make} {vehicle.model}
                       </h3>
                       <p className="text-sm text-[#B0B0B0]">{vehicle.plate_number || "No plate"}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400">
                       Active
                     </span>
@@ -265,7 +267,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
                     <span className="text-[#B0B0B0]">Mileage</span>
                     <span className="text-white font-medium">
                       {vehicle.current_mileage?.toLocaleString() ?? "N/A"} miles
@@ -277,7 +279,8 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                   </div>
                 </div>
 
-                <div className="flex gap-2 mt-4">
+                {/* Mobile adjustment: action buttons stack for better tap targets on phones */}
+                <div className="flex flex-col sm:flex-row gap-2 mt-4">
                   <button
                     type="button"
                     onClick={() => openServiceHistory(vehicle)}
@@ -321,7 +324,8 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
       >
         {vehicleToView && (
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
+            {/* Mobile adjustment: stack media and text to prevent clipping in details dialog */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               {vehicleToView.image_url ? (
                 <Image
                   src={vehicleToView.image_url}
@@ -382,11 +386,11 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
               <p className="text-white text-sm mt-1 whitespace-pre-wrap">{vehicleToView.notes || "No notes"}</p>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-stretch sm:justify-end">
               <button
                 type="button"
                 onClick={() => setVehicleToView(null)}
-                className="px-4 py-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-lg transition-colors"
+                className="w-full sm:w-auto px-4 py-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-lg transition-colors"
               >
                 Close
               </button>
@@ -457,11 +461,11 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
             </div>
           )}
 
-          <div className="flex justify-end">
+          <div className="flex justify-stretch sm:justify-end">
             <button
               type="button"
               onClick={() => setHistoryVehicle(null)}
-              className="px-4 py-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-lg transition-colors"
+              className="w-full sm:w-auto px-4 py-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-lg transition-colors"
             >
               Close
             </button>
@@ -495,7 +499,8 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
               ? `Delete ${vehicleToDelete.year} ${vehicleToDelete.make} ${vehicleToDelete.model}? This also removes related maintenance, reminders, and expenses.`
               : "Delete this vehicle?"}
           </p>
-          <div className="flex justify-end gap-2">
+          {/* Mobile adjustment: stack destructive confirmation actions for easier touch interaction */}
+          <div className="flex flex-col-reverse sm:flex-row justify-stretch sm:justify-end gap-2">
             <button
               type="button"
               onClick={() => setVehicleToDelete(null)}
@@ -507,7 +512,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
               type="button"
               onClick={handleDeleteVehicle}
               disabled={isDeleting}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </button>
@@ -517,3 +522,5 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
     </>
   );
 }
+
+

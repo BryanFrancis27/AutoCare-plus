@@ -1,20 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { LoginForm } from "./LoginForm";
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Decorative blur orbs */}
+    <main className="min-h-screen bg-[#1A1A1A] flex items-center justify-center px-4 py-6 sm:p-6 relative overflow-hidden">
       <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#D32F2F] rounded-full blur-[120px] opacity-20" />
       <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#E53935] rounded-full blur-[120px] opacity-20" />
-      
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo */}
-        <motion.div 
+
+      {/* Mobile adjustment: slightly wider cap on tablets while preserving centered auth card */}
+      <div className="w-full max-w-md sm:max-w-lg relative z-10">
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -29,12 +27,11 @@ export default function LoginPage() {
           <p className="text-[#B0B0B0]">Welcome back! Please login to your account.</p>
         </motion.div>
 
-        {/* Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="bg-[#262626] border border-[#3A3A3A] rounded-2xl p-8 shadow-2xl"
+          className="bg-[#262626] border border-[#3A3A3A] rounded-2xl p-5 sm:p-8 shadow-2xl"
         >
           <LoginForm />
 

@@ -166,7 +166,7 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
             onClick={(e) => {
               if (e.target === e.currentTarget && !loading) {
                 handleClose();
@@ -180,7 +180,8 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
                 </div>
               )}
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-[#3A3A3A]">
+              {/* Mobile adjustment: compact header spacing on narrow screens */}
+              <div className="flex items-center justify-between gap-3 p-4 sm:p-6 border-b border-[#3A3A3A]">
                 <div>
                   <h2 className="text-2xl font-bold text-white">Schedule Reminder</h2>
                   <p className="text-sm text-[#B0B0B0] mt-1">
@@ -198,7 +199,7 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
 
               {/* Form */}
               <form onSubmit={handleSubmit}>
-                <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+                <div className="p-4 sm:p-6 space-y-6 max-h-[65vh] sm:max-h-[60vh] overflow-y-auto">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -365,19 +366,20 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between gap-3 p-6 border-t border-[#3A3A3A]">
+                {/* Mobile adjustment: stack footer actions for better thumb reach */}
+                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 sm:p-6 border-t border-[#3A3A3A]">
                   <button
                     type="button"
                     onClick={handleClose}
                     disabled={loading}
-                    className="px-6 py-3 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-6 py-3 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? loadingLabel : 'Create Reminder'}
                   </button>
@@ -390,3 +392,7 @@ export function AddReminderModal({ isOpen, onClose, vehicleId, vehicleName }: Ad
     </AnimatePresence>
   );
 }
+
+
+
+

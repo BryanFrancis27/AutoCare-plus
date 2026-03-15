@@ -87,7 +87,8 @@ export function LoginForm() {
       </div>
 
       {/* Remember Me & Forgot Password */}
-      <div className="flex items-center justify-between text-sm">
+      {/* Mobile adjustment: stack helper actions to avoid crowding on narrow widths */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-sm">
         <label className="flex items-center gap-2 text-[#B0B0B0] cursor-pointer">
           <input
             id="remember-me"
@@ -119,3 +120,8 @@ export function LoginForm() {
     </form>
   );
 }
+
+
+
+
+

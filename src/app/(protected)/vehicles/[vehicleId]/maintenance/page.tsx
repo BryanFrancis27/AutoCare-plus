@@ -11,7 +11,7 @@ export default async function MaintenanceLogsPage({ params }: Props) {
 
   if (error) {
     return (
-      <main className="flex-1 px-6 py-8 space-y-4">
+      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-4">
         <PageHeader title="Maintenance Logs" description={`History for vehicle ${params.vehicleId}.`} />
         <Card className="p-6">
           <p className="text-red-600">Error loading maintenance records: {error}</p>
@@ -21,12 +21,13 @@ export default async function MaintenanceLogsPage({ params }: Props) {
   }
 
   return (
-    <main className="flex-1 px-6 py-8 space-y-4">
+    // Mobile adjustment: align maintenance page spacing with other protected pages.
+    <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-4">
       <PageHeader
         title="Maintenance History"
         description="Complete service and maintenance records"
         actions={
-          <Button href={`/vehicles/${params.vehicleId}/maintenance/add`}>
+          <Button href={`/vehicles/${params.vehicleId}/maintenance/add`} className="w-full sm:w-auto">
             Log Maintenance
           </Button>
         }
@@ -36,8 +37,9 @@ export default async function MaintenanceLogsPage({ params }: Props) {
         <div className="space-y-3">
           {records.map((record) => (
             <Card key={record.id} className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
+              {/* Mobile adjustment: stack action button below details on narrow screens */}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-textPrimary">{record.serviceType}</h3>
                     <span className={`px-2 py-0.5 text-xs font-medium rounded ${getPriorityColor(record.priority)}`}>
@@ -45,8 +47,8 @@ export default async function MaintenanceLogsPage({ params }: Props) {
                     </span>
                   </div>
                   <p className="text-sm text-textSecondary mt-1">{record.serviceCategory}</p>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-3">
                     <div>
                       <div className="text-xs text-textSecondary">Service Date</div>
                       <div className="text-sm font-medium">{formatDueDate(record.serviceDate)}</div>
@@ -74,8 +76,8 @@ export default async function MaintenanceLogsPage({ params }: Props) {
                   )}
                 </div>
 
-                <div className="ml-4">
-                  <Button variant="secondary" href={`/maintenance/${record.id}/edit`}>
+                <div className="sm:ml-4">
+                  <Button variant="secondary" href={`/maintenance/${record.id}/edit`} className="w-full sm:w-auto">
                     Edit
                   </Button>
                 </div>
@@ -89,9 +91,7 @@ export default async function MaintenanceLogsPage({ params }: Props) {
           <p className="text-textSecondary mb-6">
             Start tracking your vehicle&apos;s maintenance history.
           </p>
-          <Button href={`/vehicles/${params.vehicleId}/maintenance/add`}>
-            Log First Maintenance
-          </Button>
+          <Button href={`/vehicles/${params.vehicleId}/maintenance/add`}>Log First Maintenance</Button>
         </Card>
       )}
     </main>

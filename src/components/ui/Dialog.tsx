@@ -18,7 +18,8 @@ const sizeClasses: Record<NonNullable<DialogProps["size"]>, string> = {
   md: "max-w-md",
   lg: "max-w-2xl",
   xl: "max-w-4xl",
-  full: "max-w-6xl h-[90vh]",
+  // Mobile adjustment: allow full-screen dialogs on phones while keeping desktop max width.
+  full: "max-w-6xl h-[92vh] sm:h-[90vh]",
 };
 
 export function Dialog({
@@ -31,11 +32,10 @@ export function Dialog({
 }: DialogProps) {
   const [mounted, setMounted] = useState(false);
 
-  // Ensure portal only renders on client after mount
   useEffect(() => {
     setMounted(true);
   }, []);
-  // Prevent body scroll when dialog is open
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -47,7 +47,6 @@ export function Dialog({
     };
   }, [isOpen]);
 
-  // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -62,7 +61,6 @@ export function Dialog({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -72,8 +70,8 @@ export function Dialog({
             onClick={onClose}
           />
 
-          {/* Dialog */}
-          <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4">
+          {/* Mobile adjustment: tighter outer padding on small screens */}
+          <div className="fixed inset-0 z-[1001] flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -82,10 +80,9 @@ export function Dialog({
               className={`bg-containerBg rounded-2xl shadow-2xl border border-grayBorder w-full ${size === "full" ? "flex flex-col overflow-hidden" : "overflow-y-auto"} ${sizeClasses[size]} ${size !== "full" ? "max-h-[90vh]" : ""}`}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
               {(title || showCloseButton) && (
-                <div className="flex items-center justify-between px-6 py-4 border-b border-grayBorder">
-                  {title && <h2 className="text-xl font-semibold text-whitePure">{title}</h2>}
+                <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-grayBorder">
+                  {title && <h2 className="text-lg sm:text-xl font-semibold text-whitePure break-words">{title}</h2>}
                   {showCloseButton && (
                     <button
                       onClick={onClose}
@@ -98,8 +95,7 @@ export function Dialog({
                 </div>
               )}
 
-              {/* Content */}
-              <div className={`px-6 py-4 ${size === "full" ? "flex-1 min-h-0" : ""}`}>{children}</div>
+              <div className={`px-4 sm:px-6 py-4 ${size === "full" ? "flex-1 min-h-0" : ""}`}>{children}</div>
             </motion.div>
           </div>
         </>
@@ -107,7 +103,6 @@ export function Dialog({
     </AnimatePresence>
   );
 
-  // Use portal to escape parent stacking/overflow contexts
   return mounted && typeof document !== "undefined"
     ? createPortal(dialogContent, document.body)
     : null;
