@@ -708,7 +708,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                         {/* Current Mileage */}
                         <div>
                           <label className="block text-sm text-muted mb-2">
-                            Current Mileage (miles) <span className="text-accent">*</span>
+                            Current Mileage (km) <span className="text-accent">*</span>
                           </label>
                           <input
                             type="text"

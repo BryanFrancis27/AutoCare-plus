@@ -9,7 +9,7 @@ const steps = [
 ];
 export function DashboardOnboarding({ onAdd }: { onAdd: () => void }) {
   return <section className="overflow-hidden rounded-2xl border border-line bg-surface shadow-card" aria-labelledby="onboarding-title">
-    <div className="grid gap-6 p-6 sm:p-8 xl:grid-cols-[1.3fr_1fr] xl:items-center">
+    <div className="dashboard-onboarding-grid grid gap-6 p-6 sm:p-8">
       <div>
         <span className="inline-flex items-center gap-2 rounded-full bg-accentSoft px-3 py-1 text-sm leading-5 font-semibold text-accent"><Car className="h-4 w-4" aria-hidden="true" />Your garage starts here</span>
         <h2 id="onboarding-title" className="mt-5 max-w-xl text-2xl font-semibold tracking-tight text-ink sm:text-3xl">A little care. More peace of mind.</h2>
@@ -20,7 +20,7 @@ export function DashboardOnboarding({ onAdd }: { onAdd: () => void }) {
       <ol className="space-y-3 rounded-xl bg-canvas p-4 sm:p-5" aria-label="Getting started">
         {steps.map(({ icon: Icon, title, description }, index) => <li key={title} className="flex gap-3 rounded-lg border border-line bg-surface px-4 py-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accentSoft text-accent"><Icon className="h-5 w-5" aria-hidden="true" /></div>
-          <div><p className="text-sm leading-5 font-medium text-muted">Step {index + 1}</p><h3 className="mt-1 text-sm font-semibold text-ink">{title}</h3><p className="mt-1 text-sm text-muted">{description}</p></div>
+          <div className="min-w-0"><p className="text-sm leading-5 font-medium text-muted">Step {index + 1}</p><h3 className="mt-1 text-sm font-semibold text-ink">{title}</h3><p className="mt-1 text-sm text-muted">{description}</p></div>
         </li>)}
       </ol>
     </div>
