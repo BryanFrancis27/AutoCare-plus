@@ -1,105 +1,28 @@
-'use client';
+import Link from 'next/link';
+import { Car, Wrench, Clock3 } from 'lucide-react';
+import type { DashboardActivity } from '../../services/dashboardService';
 
-import { motion } from 'framer-motion';
-import { Wrench, Bell, DollarSign, Car, Clock, Edit, Trash2 } from 'lucide-react';
-import { ActivityItem } from '@/app/actions/dashboard-metrics';
-import { LoadingState } from '@/components/ui';
-
-interface ActivityFeedProps {
-  activities: ActivityItem[];
-  loading?: boolean;
-  maxItems?: number;
-}
-
-const formatRelativeTime = (date: Date): string => {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffHours < 1) return 'Just now';
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return '1 day ago';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7);
-    return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
-  }
-
-  const months = Math.floor(diffDays / 30);
-  return `${months} month${months > 1 ? 's' : ''} ago`;
-};
-
-const getActivityIcon = (type: ActivityItem['type']) => {
-  switch (type) {
-    case 'maintenance':
-      return { Icon: Wrench, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
-    case 'reminder':
-      return { Icon: Bell, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
-    case 'expense':
-      return { Icon: DollarSign, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
-    case 'vehicle_added':
-      return { Icon: Car, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
-    case 'vehicle_edited':
-      return { Icon: Edit, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
-    case 'vehicle_deleted':
-      return { Icon: Trash2, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
-    default:
-      return { Icon: Clock, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
-  }
-};
-
-export function ActivityFeed({ activities, loading = false, maxItems = 3 }: ActivityFeedProps) {
-  const displayActivities = activities.slice(0, maxItems);
-
+export function ActivityFeed({ activities }: { activities: DashboardActivity[] }) {
   return (
-    <div className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-6">
-      <h3 className="text-lg font-semibold text-ink mb-4">Recent Activity</h3>
-
-      {loading ? (
-        <LoadingState mode="container" label="Loading recent activity..." className="min-h-[220px]" />
-      ) : displayActivities.length > 0 ? (
-        <div className="space-y-4">
-          {displayActivities.map((activity, index) => {
-            const { Icon, bgColor, iconColor } = getActivityIcon(activity.type);
-
-            return (
-              <motion.div
-                key={activity.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-darkBg rounded-lg p-4 hover:bg-surfaceHover transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  <div className={`${bgColor} p-3 rounded-full flex-shrink-0`}>
-                    <Icon className={`h-5 w-5 ${iconColor}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-1">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-ink">{activity.description}</h4>
-                        {activity.vehicleName && (
-                          <p className="text-sm text-textSecondary mt-0.5">{activity.vehicleName}</p>
-                        )}
-                      </div>
-                      <span className="text-xs text-textSecondary flex-shrink-0 ml-2">
-                        {formatRelativeTime(activity.timestamp)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="text-center py-12 text-textSecondary">
-          <Clock className="h-16 w-16 mx-auto mb-4 text-grayBorder" />
-          <p className="text-lg font-medium text-ink">No recent activity</p>
-          <p className="text-sm mt-1">Activity will appear here as you use AutoCare+</p>
-        </div>
-      )}
-    </div>
+    <section className="card p-4 sm:p-6" aria-labelledby="activity-title">
+      <h2 id="activity-title" className="text-lg font-semibold text-ink">Recent activity</h2>
+      <p className="mt-1 text-sm text-muted">Your latest vehicle additions and service records.</p>
+      {activities.length ? <ul className="mt-4 divide-y divide-line">
+        {activities.map(activity => {
+          const Icon = activity.type === 'maintenance' ? Wrench : Car;
+          return <li key={activity.id} className="flex items-start gap-3 py-4">
+            <span className="rounded-lg bg-canvas p-2 text-muted"><Icon className="h-4 w-4" aria-hidden="true" /></span>
+            <div className="min-w-0 flex-1">
+              <p className="break-words text-sm font-medium text-ink">{activity.description}</p>
+              <Link href={`/vehicles/${activity.vehicleId}`} className="mt-1 inline-block break-words text-sm text-accent hover:underline">{activity.vehicleName}</Link>
+              <time dateTime={activity.date} className="mt-1 block text-sm leading-5 text-muted">{new Date(activity.date.length === 10 ? activity.date + 'T12:00:00' : activity.date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}</time>
+            </div>
+          </li>;
+        })}
+      </ul> : <div className="mt-4 flex items-start gap-3 rounded-lg bg-canvas p-4">
+        <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-muted" aria-hidden="true" />
+        <p className="text-sm text-muted">No recent activity yet. Your vehicle additions and maintenance records will appear here.</p>
+      </div>}
+    </section>
   );
 }

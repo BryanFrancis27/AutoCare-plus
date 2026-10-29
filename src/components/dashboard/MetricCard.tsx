@@ -1,30 +1,21 @@
-import { LucideIcon } from 'lucide-react';
-import { LoadingState } from '@/components/ui';
+import type { LucideIcon } from 'lucide-react';
 
 interface MetricCardProps {
   label: string;
   value: string | number;
   icon: LucideIcon;
-  iconBgColor: string;
-  loading?: boolean;
+  description?: string;
 }
 
-export function MetricCard({ label, value, icon: Icon, iconBgColor, loading = false }: MetricCardProps) {
+export function MetricCard({ label, value, icon: Icon, description }: MetricCardProps) {
   return (
-    <div className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-6">
-      <div className="flex items-center justify-between">
-        {loading ? (
-          <LoadingState mode="inline" label={`Loading ${label.toLowerCase()}...`} />
-        ) : (
-          <div>
-            <p className="text-sm font-medium text-textSecondary">{label}</p>
-            <p className="text-3xl font-bold text-ink mt-1">{value}</p>
-          </div>
-        )}
-        <div className="p-3 rounded-lg bg-redPrimary">
-          <Icon className="h-6 w-6 text-onAccent" />
-        </div>
+    <div className="card min-w-0 p-4 sm:p-5">
+      <div className="flex items-center gap-2 text-muted">
+        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <p className="text-sm font-medium">{label}</p>
       </div>
+      <p className="mt-2 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{value}</p>
+      {description && <p className="mt-1 text-sm leading-5 text-muted">{description}</p>}
     </div>
   );
 }

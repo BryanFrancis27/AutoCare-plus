@@ -1,302 +1,75 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Car, Wrench, Bell, PhilippinePeso, Plus } from 'lucide-react';
-import {
-  MetricCard,
-  ActivityFeed,
-  WrenchAnimation,
-  ServiceExpensesModal,
-} from '@/components/dashboard';
+import { Car, Wrench, Bell, PhilippinePeso, Plus, RefreshCw, AlertCircle } from 'lucide-react';
+import { MetricCard, ActivityFeed, UpcomingReminders, QuickActionButton, ServiceExpensesModal } from '@/components/dashboard';
+import { DashboardOnboarding } from '@/components/dashboard/DashboardOnboarding';
+import { GarageOverview } from '@/components/dashboard/GarageOverview';
 import { LogMaintenanceModal } from '@/components/maintenance/LogMaintenanceModal';
 import { AddVehicleModal } from '@/components/vehicles/AddVehicleModal';
-import { ActivityItem } from '@/app/actions/dashboard-metrics';
-import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { DashboardErrorBoundary } from '@/components/ErrorBoundary';
+import { LoadingState } from '@/components/ui';
+import { useDashboard } from '@/lib/dashboard/use-dashboard';
 import { formatCurrencyPHP } from '@/lib/currency';
-import { useRouter } from 'next/navigation';
-
-interface DashboardMetrics {
-  totalVehicles: number;
-  maintenanceRecords: number;
-  activeReminders: number;
-  monthlyExpenses: number;
-}
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [loadingMetrics, setLoadingMetrics] = useState(true);
-  const [loadingActivities, setLoadingActivities] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  // Modal states
+  const { state, refresh } = useDashboard();
   const [addVehicleOpen, setAddVehicleOpen] = useState(false);
   const [logMaintenanceOpen, setLogMaintenanceOpen] = useState(false);
   const [serviceExpensesOpen, setServiceExpensesOpen] = useState(false);
+  const data = state.status === 'ready' ? state.data : null;
 
-  const refreshData = useCallback(() => {
-    setRefreshKey((k) => k + 1);
-  }, []);
+  return <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+    <AddVehicleModal isOpen={addVehicleOpen} onClose={() => setAddVehicleOpen(false)} mode="create" onSaved={() => { setAddVehicleOpen(false); void refresh(true); }} />
+    <LogMaintenanceModal isOpen={logMaintenanceOpen} onClose={() => setLogMaintenanceOpen(false)} onSuccess={() => { void refresh(true); }} />
+    <ServiceExpensesModal isOpen={serviceExpensesOpen} onClose={() => setServiceExpensesOpen(false)} />
 
-  useEffect(() => {
-    async function loadDashboardData() {
-      setLoadingMetrics(true);
-      setLoadingActivities(true);
-
-      const supabase = createSupabaseBrowserClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      try {
-        // ----- Metrics -----
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
-
-        const [vehiclesRes, maintenanceRes, remindersRes, expensesRes] = await Promise.all([
-          supabase
-            .from('vehicles')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id),
-          supabase
-            .from('maintenance_logs')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id),
-          supabase
-            .from('reminders')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .eq('is_completed', false),
-          supabase
-            .from('maintenance_logs')
-            .select('cost')
-            .eq('user_id', user.id)
-            .gte('service_date', startOfMonth.toISOString().split('T')[0]),
-        ]);
-
-        const monthlyExpenses =
-          expensesRes.data?.reduce((sum, r) => sum + (Number(r.cost) || 0), 0) ?? 0;
-
-        setMetrics({
-          totalVehicles: vehiclesRes.count ?? 0,
-          maintenanceRecords: maintenanceRes.count ?? 0,
-          activeReminders: remindersRes.count ?? 0,
-          monthlyExpenses: Math.round(monthlyExpenses * 100) / 100,
-        });
-        setLoadingMetrics(false);
-
-        // ----- Activities -----
-        const [maintenanceData, vehiclesData] = await Promise.all([
-          supabase
-            .from('maintenance_logs')
-            .select('id, service_type, service_date, vehicle_id, vehicles(make, model, year)')
-            .eq('user_id', user.id)
-            .order('service_date', { ascending: false })
-            .limit(10),
-          supabase
-            .from('vehicles')
-            .select('id, make, model, year, created_at')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(10),
-        ]);
-
-        const combined: ActivityItem[] = [];
-
-        maintenanceData.data?.forEach((record: any) => {
-          const vehicle = record.vehicles;
-          const vehicleName = vehicle
-            ? `${vehicle.year} ${vehicle.make} ${vehicle.model}`
-            : undefined;
-          combined.push({
-            id: `maintenance-${record.id}`,
-            type: 'maintenance',
-            description: vehicleName
-              ? `Maintenance logged for ${vehicle.make} ${vehicle.model}`
-              : `${record.service_type} logged`,
-            timestamp: new Date(record.service_date),
-            vehicleName,
-            vehicleId: record.vehicle_id,
-          });
-        });
-
-        vehiclesData.data?.forEach((vehicle: any) => {
-          combined.push({
-            id: `vehicle-${vehicle.id}`,
-            type: 'vehicle_added',
-            description: `Vehicle added to garage`,
-            timestamp: new Date(vehicle.created_at),
-            vehicleName: `${vehicle.year} ${vehicle.make} ${vehicle.model}`,
-            vehicleId: vehicle.id,
-          });
-        });
-
-        setActivities(
-          combined.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, 3)
-        );
-        setLoadingActivities(false);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        setLoadingMetrics(false);
-        setLoadingActivities(false);
-      }
-    }
-
-    loadDashboardData();
-  }, [refreshKey]);
-
-  const quickActions = [
-    {
-      id: 'add_vehicle',
-      label: 'Add Vehicle',
-      icon: Plus,
-      onClick: () => setAddVehicleOpen(true),
-    },
-    {
-      id: 'log_maintenance',
-      label: 'Log Maintenance',
-      icon: Wrench,
-      onClick: () => setLogMaintenanceOpen(true),
-    },
-    {
-      id: 'set_reminder',
-      label: 'Set Reminder',
-      icon: Bell,
-      onClick: () => router.push('/reminders'),
-    },
-    {
-      id: 'view_expenses',
-      label: 'View Service & Expenses',
-      icon: PhilippinePeso,
-      onClick: () => setServiceExpensesOpen(true),
-    },
-  ];
-
-  return (
-    // Mobile adjustment: reduce horizontal padding on small screens and scale up progressively.
-    <div className="px-4 py-6 sm:px-6 sm:py-8 space-y-6">
-      {/* Modals */}
-      <AddVehicleModal
-        isOpen={addVehicleOpen}
-        onClose={() => setAddVehicleOpen(false)}
-        mode="create"
-        onSaved={() => {
-          setAddVehicleOpen(false);
-          refreshData();
-        }}
-      />
-      <LogMaintenanceModal
-        isOpen={logMaintenanceOpen}
-        onClose={() => setLogMaintenanceOpen(false)}
-        onSuccess={refreshData}
-      />
-      <ServiceExpensesModal
-        isOpen={serviceExpensesOpen}
-        onClose={() => setServiceExpensesOpen(false)}
-      />
-
-      {/* Page Title */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-ink">Dashboard</h1>
-        <p className="text-textSecondary mt-1">
-          Overview of your vehicles, recent activity, and reminders.
-        </p>
+    <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-start">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold uppercase tracking-wide text-muted">Your AutoCare+ dashboard</p>
+        <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{data ? `Welcome${data.totalVehicles > 0 ? ' back' : ''}, ${data.name}` : 'Your vehicle care, together'}</h1>
+        <p className="mt-2 text-base leading-6 text-muted">{data?.totalVehicles ? 'Keep track of your garage and plan your next service.' : 'A clear place to start, and an easier way to keep up with maintenance.'}</p>
       </div>
-
-      {/* Metric Cards */}
-      <DashboardErrorBoundary>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { label: 'Total Vehicles', value: metrics?.totalVehicles ?? 0, icon: Car, delay: 0 },
-            {
-              label: 'Maintenance Records',
-              value: metrics?.maintenanceRecords ?? 0,
-              icon: Wrench,
-              delay: 0.1,
-            },
-            {
-              label: 'Active Reminders',
-              value: metrics?.activeReminders ?? 0,
-              icon: Bell,
-              delay: 0.2,
-            },
-            {
-              label: 'Monthly Expenses',
-              value: formatCurrencyPHP(metrics?.monthlyExpenses ?? 0),
-              icon: PhilippinePeso,
-              delay: 0.3,
-            },
-          ].map(({ label, value, icon, delay }) => (
-            <motion.div
-              key={label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay }}
-            >
-              <MetricCard
-                label={label}
-                value={value}
-                icon={icon}
-                iconBgColor="bg-redPrimary"
-                loading={loadingMetrics}
-              />
-            </motion.div>
-          ))}
-        </div>
-      </DashboardErrorBoundary>
-
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-4 sm:p-6"
-      >
-        <h3 className="text-lg font-semibold text-ink mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action) => (
-            <button
-              key={action.id}
-              onClick={action.onClick}
-              className="flex items-center gap-3 p-4 bg-darkBg hover:bg-surfaceHover rounded-lg transition-colors group text-left"
-            >
-              <div className="p-2 rounded-lg bg-redPrimary group-hover:scale-110 transition-transform flex-shrink-0">
-                <action.icon className="h-5 w-5 text-onAccent" />
-              </div>
-              <span className="text-sm font-medium text-ink">{action.label}</span>
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Activity Feed + Wrench Animation */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardErrorBoundary>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <ActivityFeed activities={activities} loading={loadingActivities} maxItems={3} />
-          </motion.div>
-        </DashboardErrorBoundary>
-
-        <DashboardErrorBoundary>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <WrenchAnimation />
-          </motion.div>
-        </DashboardErrorBoundary>
-      </div>
+      {data && <div className="flex shrink-0 flex-wrap gap-2">
+        <button type="button" onClick={() => { void refresh(); }} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-controlBorder bg-surface px-3 text-sm font-medium text-ink hover:bg-canvas"><RefreshCw className="h-4 w-4" aria-hidden="true" />Refresh</button>
+        {data.totalVehicles > 0 && <button type="button" onClick={() => setAddVehicleOpen(true)} className="button-primary min-h-11 gap-2"><Plus className="h-4 w-4" aria-hidden="true" />Add Vehicle</button>}
+      </div>}
     </div>
-  );
-}
 
+    {state.status === 'loading' && <LoadingState mode="container" label="Loading your garage and maintenance overview..." />}
+    {state.status === 'error' && <section role="alert" className="card flex flex-col items-start gap-4 p-6 sm:flex-row">
+      <AlertCircle className="h-6 w-6 shrink-0 text-accent" aria-hidden="true" />
+      <div><h2 className="text-lg font-semibold text-ink">We couldn&apos;t load your dashboard</h2><p className="mt-2 text-sm text-muted">{state.message}</p>
+        {state.sessionExpired ? <Link href="/login" className="button-primary mt-4 min-h-11">Sign in again</Link> : <button type="button" onClick={() => { void refresh(); }} className="button-primary mt-4 min-h-11">Try again</button>}
+      </div>
+    </section>}
+
+    {data && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }} className="space-y-6">
+      <p role="status" className="sr-only">Dashboard loaded. {data.totalVehicles === 0 ? 'Add your first vehicle to get started.' : `${data.totalVehicles} vehicles in your garage.`}</p>
+      {data.totalVehicles === 0 ? <DashboardOnboarding onAdd={() => setAddVehicleOpen(true)} /> : <>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Total vehicles" value={data.totalVehicles} icon={Car} description="In your garage" />
+          <MetricCard label="Maintenance records" value={data.maintenanceRecords} icon={Wrench} description="All recorded services" />
+          <MetricCard label="Active reminders" value={data.activeReminders} icon={Bell} description="Not yet completed" />
+          <MetricCard label="Monthly maintenance expenses" value={formatCurrencyPHP(data.monthlyExpenses)} icon={PhilippinePeso} description={`${data.monthLabel} · PHP`} />
+        </div>
+        <GarageOverview vehicles={data.vehicles} total={data.totalVehicles} />
+        <section aria-labelledby="quick-actions-title">
+          <h2 id="quick-actions-title" className="text-lg font-semibold text-ink">What would you like to do?</h2>
+          {data.maintenanceRecords === 0 && <p className="mt-1 text-sm leading-5 text-muted">Your garage is ready. Log your first service to start building its maintenance history.</p>}
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <QuickActionButton label="Add Vehicle" description="Grow your garage" icon={Plus} onClick={() => setAddVehicleOpen(true)} />
+            <QuickActionButton label={data.maintenanceRecords === 0 ? "Log Your First Service" : "Log Maintenance"} description={data.maintenanceRecords === 0 ? "Start your service history" : "Record your latest service"} icon={Wrench} onClick={() => setLogMaintenanceOpen(true)} />
+            <QuickActionButton label="Set Reminder" description="Plan upcoming maintenance" icon={Bell} href="/reminders" />
+            <QuickActionButton label="View Service & Expenses" description="Review your service costs" icon={PhilippinePeso} onClick={() => setServiceExpensesOpen(true)} />
+          </div>
+        </section>
+        <div className="grid items-start gap-6 xl:grid-cols-[1.15fr_1fr]">
+          <UpcomingReminders reminders={data.reminders} />
+          <ActivityFeed activities={data.activities} />
+        </div>
+      </>}
+    </motion.div>}
+  </div>;
+}
