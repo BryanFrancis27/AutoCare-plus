@@ -1,117 +1,37 @@
-'use client';
-
-import { motion } from 'framer-motion';
-import { Calendar, AlertTriangle, Clock } from 'lucide-react';
 import Link from 'next/link';
-import { ReminderItem } from '@/app/actions/dashboard-metrics';
+import { CalendarDays, AlertTriangle, ArrowRight } from 'lucide-react';
+import type { DashboardReminder } from '../../services/dashboardService';
 
-interface UpcomingRemindersProps {
-  reminders: ReminderItem[];
-  loading?: boolean;
-}
-
-// Helper function to format date
-const formatDate = (date: Date): string => {
-  const now = new Date();
-  const diffMs = date.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-  
-  if (diffDays < 0) return 'Overdue';
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Tomorrow';
-  if (diffDays <= 7) return `In ${diffDays} days`;
-  
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-};
-
-const ReminderSkeleton = () => (
-  <div className="animate-pulse flex items-center justify-between p-3 border-b border-grayBorder last:border-0">
-    <div className="flex-1 space-y-2">
-      <div className="h-4 bg-grayBorder rounded w-3/4"></div>
-      <div className="h-3 bg-grayBorder rounded w-1/2"></div>
-    </div>
-    <div className="h-6 w-16 bg-grayBorder rounded ml-4"></div>
-  </div>
-);
-
-export function UpcomingReminders({ reminders, loading = false }: UpcomingRemindersProps) {
+export function UpcomingReminders({ reminders }: { reminders: DashboardReminder[] }) {
   return (
-    <div className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-ink">Upcoming Reminders</h3>
-        {reminders.length > 0 && (
-          <Link
-            href="/reminders"
-            className="text-sm text-redPrimary hover:text-redMuted transition-colors font-medium"
-          >
-            View All
-          </Link>
-        )}
+    <section className="card p-4 sm:p-6" aria-labelledby="upcoming-title">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="upcoming-title" className="text-lg font-semibold text-ink">Maintenance ahead</h2>
+        <Link href="/reminders" className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-accent hover:underline">All reminders <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
       </div>
-
-      {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <ReminderSkeleton key={index} />
-          ))}
-        </div>
-      ) : reminders.length > 0 ? (
-        <div className="space-y-2">
-          {reminders.map((reminder, index) => {
-            const isOverdue = reminder.status === 'overdue';
-            const isHighPriority = reminder.priority === 'high' || isOverdue;
-            
-            return (
-              <motion.div
-                key={reminder.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Link
-                  href="/reminders"
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-darkBg transition-colors border-b border-grayBorder last:border-0"
-                >
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    {isHighPriority ? (
-                      <AlertTriangle className="h-5 w-5 text-redPrimary flex-shrink-0 mt-0.5" />
-                    ) : (
-                      <Calendar className="h-5 w-5 text-redPrimary flex-shrink-0 mt-0.5" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h4 className={`font-medium ${isHighPriority ? 'text-redPrimary' : 'text-ink'}`}>
-                        {reminder.title}
-                      </h4>
-                      {reminder.vehicleName && (
-                        <p className="text-sm text-textSecondary mt-0.5">
-                          {reminder.vehicleName}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-                    <span
-                      className={`text-xs font-medium px-2 py-1 rounded ${
-                        isOverdue
-                          ? 'bg-redPrimary/20 text-redPrimary'
-                          : 'bg-darkBg text-textSecondary'
-                      }`}
-                    >
-                      {formatDate(reminder.dueDate)}
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="text-center py-12 text-textSecondary">
-          <Calendar className="h-16 w-16 mx-auto mb-4 text-grayBorder" />
-          <p className="text-lg font-medium text-ink">No upcoming reminders</p>
-          <p className="text-sm mt-1">Set reminders to stay on top of vehicle maintenance</p>
-        </div>
-      )}
-    </div>
+      <p className="mt-1 text-sm text-muted">Overdue items first, then the next 30 days and reminders without a due date.</p>
+      {reminders.length ? <ul className="mt-4 divide-y divide-line">
+        {reminders.map(reminder => {
+          const Icon = reminder.overdue ? AlertTriangle : CalendarDays;
+          return <li key={reminder.id}>
+            <Link href="/reminders" className="-mx-2 flex items-start gap-3 rounded-lg px-2 py-4 hover:bg-canvas">
+              <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${reminder.overdue ? 'text-accent' : 'text-muted'}`} aria-hidden="true" />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="break-words text-sm font-semibold text-ink">{reminder.title}</p>
+                  {reminder.overdue && <span className="rounded-full bg-accentSoft px-2 py-0.5 text-sm leading-5 font-medium text-accent">Overdue</span>}
+                  {reminder.priority && <span className="text-sm leading-5 capitalize text-muted">{reminder.priority} priority</span>}
+                </div>
+                <p className="mt-1 break-words text-sm text-muted">{reminder.vehicleName}</p>
+                <p className="mt-1 text-sm leading-5 text-muted">{reminder.dueDate ? `Due ${new Date(reminder.dueDate.slice(0, 10) + 'T12:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}` : 'No due date set'}{reminder.dueMileage != null ? ` · ${reminder.dueMileage.toLocaleString('en-PH')} km` : ''}</p>
+              </div>
+            </Link>
+          </li>;
+        })}
+      </ul> : <div className="mt-4 rounded-lg bg-canvas p-4">
+        <p className="text-sm font-medium text-ink">Nothing due in the next 30 days</p>
+        <p className="mt-1 text-sm text-muted">Your other reminders are still available in Reminders. Add a service reminder whenever you need one.</p>
+      </div>}
+    </section>
   );
 }
