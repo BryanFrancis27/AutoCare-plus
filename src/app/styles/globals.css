@@ -51,6 +51,94 @@ textarea,
   .skip-link { @apply fixed left-4 top-2 z-[1100] -translate-y-24 rounded-lg bg-accent px-4 py-2 text-onAccent focus:translate-y-0; }
 }
 
+/* Shared page geometry. The shell already reserves the desktop sidebar width. */
+.application-workspace {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 1760px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  container-name: workspace;
+  container-type: inline-size;
+}
+
+@media (min-width: 640px) {
+  .application-workspace { padding-inline: 1.5rem; }
+}
+@media (min-width: 1280px) {
+  .application-workspace { padding-inline: 2rem; }
+}
+@media (min-width: 1920px) {
+  .application-workspace { padding-inline: 2.5rem; }
+}
+
+.dashboard-metric-grid,
+.dashboard-action-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+.dashboard-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1.5rem;
+}
+.garage-vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1.5rem;
+}
+.dashboard-garage-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+.garage-toolbar-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 1rem;
+}
+
+@container workspace (min-width: 560px) {
+  .garage-toolbar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .garage-toolbar-search { grid-column: 1 / -1; }
+  .garage-toolbar-grid > button { justify-self: start; }
+}
+@container workspace (min-width: 600px) {
+  .dashboard-metric-grid,
+  .dashboard-action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container workspace (min-width: 720px) {
+  .garage-vehicle-card-featured {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+  .garage-vehicle-card-featured > .garage-vehicle-image-featured {
+    aspect-ratio: auto;
+    height: 100%;
+    min-height: 18rem;
+    border-bottom: 0;
+    border-right: 1px solid theme('colors.line');
+  }
+  .garage-vehicle-card-featured .garage-vehicle-actions { width: 100%; max-width: 40rem; }
+  .garage-vehicle-card-featured .garage-vehicle-body > dl { width: 100%; max-width: 40rem; }
+  .dashboard-garage-single { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); }
+  .dashboard-garage-photo-featured { height: clamp(11rem, 18cqw, 16rem); }
+}
+@container workspace (min-width: 800px) {
+  .workspace-header { flex-direction: row; align-items: flex-start; }
+}
+@container workspace (min-width: 900px) {
+  .dashboard-metric-grid,
+  .dashboard-action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .dashboard-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-onboarding-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: center; }
+  .garage-toolbar-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+  .garage-toolbar-search { grid-column: auto; }
+  .garage-toolbar-grid > button { justify-self: stretch; }
+}
+
 .autocare-maintenance-glow {
   position: fixed;
   left: 50%;

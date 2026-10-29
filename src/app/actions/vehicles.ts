@@ -112,6 +112,7 @@ export async function getUserVehicles() {
     purchase_price: vehicle.purchase_price ?? null,
     notes: vehicle.notes ?? null,
     image_url: vehicle.image_url ?? vehicle.photo_url ?? vehicle.image ?? null,
+    created_at: vehicle.created_at ?? null,
   }));
 
   return { data: normalizedVehicles, error: null };

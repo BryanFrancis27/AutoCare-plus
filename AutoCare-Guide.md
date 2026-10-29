@@ -257,7 +257,9 @@ Rules:
 
 - Prefer semantic Tailwind tokens; legacy aliases support incremental page compatibility.
 - Preserve the existing font stack. Body text uses 1rem/1.5; labels 0.875rem; page headings 1.5-1.875rem semibold.
-- Use Tailwind's 4px spacing scale: 16px mobile gutters, 24px desktop gutters, 16-24px card padding and 8-12px control gaps.
+- Use Tailwind's 4px spacing scale: 16-24px card padding and 8-12px control gaps.
+- Dashboard and My Garage use the shared `application-workspace` convention: fluid width after the sidebar, a 1760px outer cap, and 16/24/32/40px responsive horizontal gutters. Center only once the cap is reached; do not add nested page or single-card width caps.
+- Workspace container queries and content-driven grids govern card columns and toolbars. Keep reading-length limits inside text blocks; preserve the fixed header, sidebar offset, mobile drawer and normal page scrolling.
 - Use 8px control radii, 12px cards, subtle shadow-card and one-pixel borders.
 - Use red for primary actions, active navigation and meaningful warnings; pair status colors with text or icons.
 - Use ink/muted on ordinary surfaces and white only on filled accents or dark image overlays.
