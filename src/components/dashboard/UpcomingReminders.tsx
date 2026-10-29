@@ -38,7 +38,7 @@ export function UpcomingReminders({ reminders, loading = false }: UpcomingRemind
   return (
     <div className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-whitePure">Upcoming Reminders</h3>
+        <h3 className="text-lg font-semibold text-ink">Upcoming Reminders</h3>
         {reminders.length > 0 && (
           <Link
             href="/reminders"
@@ -79,7 +79,7 @@ export function UpcomingReminders({ reminders, loading = false }: UpcomingRemind
                       <Calendar className="h-5 w-5 text-redPrimary flex-shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <h4 className={`font-medium ${isHighPriority ? 'text-redPrimary' : 'text-whitePure'}`}>
+                      <h4 className={`font-medium ${isHighPriority ? 'text-redPrimary' : 'text-ink'}`}>
                         {reminder.title}
                       </h4>
                       {reminder.vehicleName && (
@@ -108,7 +108,7 @@ export function UpcomingReminders({ reminders, loading = false }: UpcomingRemind
       ) : (
         <div className="text-center py-12 text-textSecondary">
           <Calendar className="h-16 w-16 mx-auto mb-4 text-grayBorder" />
-          <p className="text-lg font-medium text-whitePure">No upcoming reminders</p>
+          <p className="text-lg font-medium text-ink">No upcoming reminders</p>
           <p className="text-sm mt-1">Set reminders to stay on top of vehicle maintenance</p>
         </div>
       )}

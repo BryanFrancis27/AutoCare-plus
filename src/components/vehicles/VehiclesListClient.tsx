@@ -160,12 +160,12 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
       <div className="px-4 py-6 sm:px-6 sm:py-8 space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">My Vehicles</h1>
-            <p className="text-[#B0B0B0]">Manage your vehicle fleet and track maintenance.</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-ink mb-1">My Vehicles</h1>
+            <p className="text-muted">Manage your vehicle fleet and track maintenance.</p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white px-4 py-2 rounded-lg transition-colors"
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-accent hover:bg-accentHover text-onAccent px-4 py-2 rounded-lg transition-colors"
           >
             <Plus className="w-5 h-5" />
             Add Vehicle
@@ -173,22 +173,22 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-4">
+          <div className="bg-red-500/10 border border-red-500/30 text-accent rounded-xl p-4">
             {error}
           </div>
         )}
 
         {actionError && (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-4">
+          <div className="bg-red-500/10 border border-red-500/30 text-accent rounded-xl p-4">
             {actionError}
           </div>
         )}
 
         {!error && localVehicles.length === 0 && (
-          <div className="bg-[#262626] border border-[#3A3A3A] rounded-xl p-8 text-center">
-            <Car className="w-10 h-10 text-[#B0B0B0] mx-auto mb-3" />
-            <h2 className="text-lg font-semibold text-white">No vehicles yet</h2>
-            <p className="text-[#B0B0B0] mt-1">Add your first vehicle to start tracking maintenance.</p>
+          <div className="bg-surface border border-line rounded-xl p-8 text-center">
+            <Car className="w-10 h-10 text-muted mx-auto mb-3" />
+            <h2 className="text-lg font-semibold text-ink">No vehicles yet</h2>
+            <p className="text-muted mt-1">Add your first vehicle to start tracking maintenance.</p>
           </div>
         )}
 
@@ -197,7 +197,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
             {localVehicles.map((vehicle) => (
               <div
                 key={vehicle.id}
-                className="bg-[#262626] border border-[#3A3A3A] rounded-xl p-4 sm:p-6 shadow-lg"
+                className="bg-surface border border-line rounded-xl p-4 sm:p-6 shadow-lg"
               >
                 {/* Mobile adjustment: card heading wraps with action group below on narrow widths */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
@@ -209,22 +209,22 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                         width={48}
                         height={48}
                         unoptimized
-                        className="w-12 h-12 rounded-lg object-cover border border-[#3A3A3A]"
+                        className="w-12 h-12 rounded-lg object-cover border border-line"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-lg bg-[#D32F2F] flex items-center justify-center">
-                        <Car className="w-6 h-6 text-white" />
+                      <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center">
+                        <Car className="w-6 h-6 text-onAccent" />
                       </div>
                     )}
                     <div className="min-w-0">
-                      <h3 className="text-base sm:text-lg font-semibold text-white break-words">
+                      <h3 className="text-base sm:text-lg font-semibold text-ink break-words">
                         {vehicle.year} {vehicle.make} {vehicle.model}
                       </h3>
-                      <p className="text-sm text-[#B0B0B0]">{vehicle.plate_number || "No plate"}</p>
+                      <p className="text-sm text-muted">{vehicle.plate_number || "No plate"}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400">
+                    <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-success">
                       Active
                     </span>
                     <button
@@ -233,7 +233,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                         setActionError(null);
                         setVehicleToView(vehicle);
                       }}
-                      className="p-2 bg-[#1D1D1C] hover:bg-[#3A3A3A] text-white rounded-lg transition-colors border border-[#3A3A3A]"
+                      className="p-2 bg-canvas hover:bg-surfaceHover text-ink rounded-lg transition-colors border border-line"
                       aria-label="View vehicle"
                       title="View vehicle"
                     >
@@ -245,7 +245,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                         setActionError(null);
                         setVehicleToEdit(vehicle);
                       }}
-                      className="p-2 bg-[#1D1D1C] hover:bg-[#3A3A3A] text-white rounded-lg transition-colors border border-[#3A3A3A]"
+                      className="p-2 bg-canvas hover:bg-surfaceHover text-ink rounded-lg transition-colors border border-line"
                       aria-label="Edit vehicle"
                       title="Edit vehicle"
                     >
@@ -257,7 +257,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                         setActionError(null);
                         setVehicleToDelete(vehicle);
                       }}
-                      className="p-2 bg-red-600/20 hover:bg-red-600/30 text-red-300 rounded-lg transition-colors border border-red-500/30"
+                      className="p-2 bg-red-600/20 hover:bg-red-600/30 text-accent rounded-lg transition-colors border border-red-500/30"
                       aria-label="Delete vehicle"
                       title="Delete vehicle"
                     >
@@ -268,14 +268,14 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
 
                 <div className="space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
-                    <span className="text-[#B0B0B0]">Mileage</span>
-                    <span className="text-white font-medium">
+                    <span className="text-muted">Mileage</span>
+                    <span className="text-ink font-medium">
                       {vehicle.current_mileage?.toLocaleString() ?? "N/A"} miles
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 p-3 bg-[#1D1D1C] rounded-lg">
-                    <Calendar className="w-4 h-4 text-[#D32F2F]" />
-                    <span className="text-sm text-white">Add service records to generate reminders</span>
+                  <div className="flex items-center gap-2 p-3 bg-canvas rounded-lg">
+                    <Calendar className="w-4 h-4 text-accent" />
+                    <span className="text-sm text-ink">Add service records to generate reminders</span>
                   </div>
                 </div>
 
@@ -284,7 +284,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                   <button
                     type="button"
                     onClick={() => openServiceHistory(vehicle)}
-                    className="autocare-button flex-1 flex items-center justify-center gap-2 bg-[#1D1D1C] text-white px-4 py-2 rounded-lg transition-all duration-200 ease-out border border-[#3A3A3A]"
+                    className="autocare-button flex-1 flex items-center justify-center gap-2 bg-canvas text-ink px-4 py-2 rounded-lg transition-all duration-200 ease-out border border-line"
                   >
                     <Wrench className="w-4 h-4" />
                     Service & Expenses
@@ -292,7 +292,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                   <button
                     type="button"
                     onClick={() => openLogMaintenance(vehicle)}
-                    className="autocare-button flex-1 flex items-center justify-center gap-2 bg-[#D32F2F] text-white px-4 py-2 rounded-lg transition-all duration-200 ease-out"
+                    className="autocare-button flex-1 flex items-center justify-center gap-2 bg-accent text-onAccent px-4 py-2 rounded-lg transition-all duration-200 ease-out"
                   >
                     <Calendar className="w-4 h-4" />
                     Log Maintenance
@@ -333,64 +333,64 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
                   width={72}
                   height={72}
                   unoptimized
-                  className="w-[72px] h-[72px] rounded-lg object-cover border border-[#3A3A3A]"
+                  className="w-[72px] h-[72px] rounded-lg object-cover border border-line"
                 />
               ) : (
-                <div className="w-[72px] h-[72px] rounded-lg bg-[#D32F2F] flex items-center justify-center">
-                  <Car className="w-8 h-8 text-white" />
+                <div className="w-[72px] h-[72px] rounded-lg bg-accent flex items-center justify-center">
+                  <Car className="w-8 h-8 text-onAccent" />
                 </div>
               )}
               <div>
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="text-lg font-semibold text-ink">
                   {vehicleToView.year} {vehicleToView.make} {vehicleToView.model}
                 </h3>
-                <p className="text-sm text-[#B0B0B0]">{vehicleToView.plate_number || "No plate"}</p>
+                <p className="text-sm text-muted">{vehicleToView.plate_number || "No plate"}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-              <div className="bg-[#1D1D1C] rounded-lg p-3">
-                <p className="text-[#B0B0B0]">Mileage</p>
-                <p className="text-white font-medium">{vehicleToView.current_mileage?.toLocaleString() ?? "N/A"} miles</p>
+              <div className="bg-canvas rounded-lg p-3">
+                <p className="text-muted">Mileage</p>
+                <p className="text-ink font-medium">{vehicleToView.current_mileage?.toLocaleString() ?? "N/A"} miles</p>
               </div>
-              <div className="bg-[#1D1D1C] rounded-lg p-3">
-                <p className="text-[#B0B0B0]">Vehicle Type</p>
-                <p className="text-white font-medium capitalize">{vehicleToView.vehicle_type || "Not set"}</p>
+              <div className="bg-canvas rounded-lg p-3">
+                <p className="text-muted">Vehicle Type</p>
+                <p className="text-ink font-medium capitalize">{vehicleToView.vehicle_type || "Not set"}</p>
               </div>
-              <div className="bg-[#1D1D1C] rounded-lg p-3">
-                <p className="text-[#B0B0B0]">Powertrain</p>
-                <p className="text-white font-medium capitalize">{vehicleToView.powertrain || "Not set"}</p>
+              <div className="bg-canvas rounded-lg p-3">
+                <p className="text-muted">Powertrain</p>
+                <p className="text-ink font-medium capitalize">{vehicleToView.powertrain || "Not set"}</p>
               </div>
-              <div className="bg-[#1D1D1C] rounded-lg p-3">
-                <p className="text-[#B0B0B0]">Transmission</p>
-                <p className="text-white font-medium">{vehicleToView.transmission || "Not set"}</p>
+              <div className="bg-canvas rounded-lg p-3">
+                <p className="text-muted">Transmission</p>
+                <p className="text-ink font-medium">{vehicleToView.transmission || "Not set"}</p>
               </div>
-              <div className="bg-[#1D1D1C] rounded-lg p-3">
-                <p className="text-[#B0B0B0]">Color</p>
-                <p className="text-white font-medium">{vehicleToView.color || "Not set"}</p>
+              <div className="bg-canvas rounded-lg p-3">
+                <p className="text-muted">Color</p>
+                <p className="text-ink font-medium">{vehicleToView.color || "Not set"}</p>
               </div>
-              <div className="bg-[#1D1D1C] rounded-lg p-3">
-                <p className="text-[#B0B0B0]">Purchase Date</p>
-                <p className="text-white font-medium">{vehicleToView.purchase_date || "Not set"}</p>
+              <div className="bg-canvas rounded-lg p-3">
+                <p className="text-muted">Purchase Date</p>
+                <p className="text-ink font-medium">{vehicleToView.purchase_date || "Not set"}</p>
               </div>
-              <div className="bg-[#1D1D1C] rounded-lg p-3">
-                <p className="text-[#B0B0B0]">Purchase Price</p>
-                <p className="text-white font-medium">
+              <div className="bg-canvas rounded-lg p-3">
+                <p className="text-muted">Purchase Price</p>
+                <p className="text-ink font-medium">
                   {vehicleToView.purchase_price != null ? formatCurrencyPHP(vehicleToView.purchase_price) : "Not set"}
                 </p>
               </div>
             </div>
 
-            <div className="bg-[#1D1D1C] rounded-lg p-3">
-              <p className="text-[#B0B0B0] text-sm">Notes</p>
-              <p className="text-white text-sm mt-1 whitespace-pre-wrap">{vehicleToView.notes || "No notes"}</p>
+            <div className="bg-canvas rounded-lg p-3">
+              <p className="text-muted text-sm">Notes</p>
+              <p className="text-ink text-sm mt-1 whitespace-pre-wrap">{vehicleToView.notes || "No notes"}</p>
             </div>
 
             <div className="flex justify-stretch sm:justify-end">
               <button
                 type="button"
                 onClick={() => setVehicleToView(null)}
-                className="w-full sm:w-auto px-4 py-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-lg transition-colors"
+                className="w-full sm:w-auto px-4 py-2 bg-accent hover:bg-accentHover text-onAccent rounded-lg transition-colors"
               >
                 Close
               </button>
@@ -411,7 +411,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
           )}
 
           {historyError && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-4 text-sm">
+            <div className="bg-red-500/10 border border-red-500/30 text-accent rounded-xl p-4 text-sm">
               {historyError}
             </div>
           )}
@@ -419,25 +419,25 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
           {!isHistoryLoading && !historyError && (
             <div className="space-y-5">
               <section className="space-y-3">
-                <h3 className="text-base font-semibold text-white">Service History</h3>
+                <h3 className="text-base font-semibold text-ink">Service History</h3>
 
                 {historyEntries.length === 0 && (
-                  <div className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-xl p-6 text-center">
-                    <p className="text-[#B0B0B0] text-sm">No service history yet for this vehicle.</p>
+                  <div className="bg-canvas border border-line rounded-xl p-6 text-center">
+                    <p className="text-muted text-sm">No service history yet for this vehicle.</p>
                   </div>
                 )}
 
                 {historyEntries.length > 0 && (
                   <div className="space-y-3 max-h-[52vh] overflow-y-auto pr-1">
                     {historyEntries.map((entry) => (
-                      <div key={entry.id} className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-xl p-4">
+                      <div key={entry.id} className="bg-canvas border border-line rounded-xl p-4">
                         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                           <div>
-                            <p className="text-white font-semibold">{entry.serviceType}</p>
-                            <p className="text-sm text-[#B0B0B0] mt-1">Date: {formatDueDate(entry.serviceDate)}</p>
-                            <p className="text-sm text-[#B0B0B0] mt-1">Cost: {formatCurrencyPHP(entry.cost)}</p>
+                            <p className="text-ink font-semibold">{entry.serviceType}</p>
+                            <p className="text-sm text-muted mt-1">Date: {formatDueDate(entry.serviceDate)}</p>
+                            <p className="text-sm text-muted mt-1">Cost: {formatCurrencyPHP(entry.cost)}</p>
                           </div>
-                          <p className="text-sm text-white md:text-right">{entry.notes || "No notes"}</p>
+                          <p className="text-sm text-ink md:text-right">{entry.notes || "No notes"}</p>
                         </div>
                       </div>
                     ))}
@@ -446,15 +446,15 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-base font-semibold text-white">Expenses Summary</h3>
+                <h3 className="text-base font-semibold text-ink">Expenses Summary</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-xl p-4">
-                    <p className="text-sm text-[#B0B0B0]">Monthly Expenses</p>
-                    <p className="text-xl font-semibold text-white mt-1">{formatCurrencyPHP(expenseSummary.monthlyTotal)}</p>
+                  <div className="bg-canvas border border-line rounded-xl p-4">
+                    <p className="text-sm text-muted">Monthly Expenses</p>
+                    <p className="text-xl font-semibold text-ink mt-1">{formatCurrencyPHP(expenseSummary.monthlyTotal)}</p>
                   </div>
-                  <div className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-xl p-4">
-                    <p className="text-sm text-[#B0B0B0]">Yearly Expenses</p>
-                    <p className="text-xl font-semibold text-white mt-1">{formatCurrencyPHP(expenseSummary.yearlyTotal)}</p>
+                  <div className="bg-canvas border border-line rounded-xl p-4">
+                    <p className="text-sm text-muted">Yearly Expenses</p>
+                    <p className="text-xl font-semibold text-ink mt-1">{formatCurrencyPHP(expenseSummary.yearlyTotal)}</p>
                   </div>
                 </div>
               </section>
@@ -465,7 +465,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
             <button
               type="button"
               onClick={() => setHistoryVehicle(null)}
-              className="w-full sm:w-auto px-4 py-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-lg transition-colors"
+              className="w-full sm:w-auto px-4 py-2 bg-accent hover:bg-accentHover text-onAccent rounded-lg transition-colors"
             >
               Close
             </button>
@@ -494,7 +494,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
         title="Delete Vehicle"
       >
         <div className="space-y-4">
-          <p className="text-[#B0B0B0] text-sm">
+          <p className="text-muted text-sm">
             {vehicleToDelete
               ? `Delete ${vehicleToDelete.year} ${vehicleToDelete.make} ${vehicleToDelete.model}? This also removes related maintenance, reminders, and expenses.`
               : "Delete this vehicle?"}
@@ -504,7 +504,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
             <button
               type="button"
               onClick={() => setVehicleToDelete(null)}
-              className="px-4 py-2 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors"
+              className="px-4 py-2 text-ink hover:bg-surfaceHover rounded-lg transition-colors"
             >
               Cancel
             </button>
@@ -512,7 +512,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
               type="button"
               onClick={handleDeleteVehicle}
               disabled={isDeleting}
-              className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-onAccent rounded-lg transition-colors disabled:opacity-50"
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </button>

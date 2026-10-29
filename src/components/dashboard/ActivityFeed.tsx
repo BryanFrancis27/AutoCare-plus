@@ -33,19 +33,19 @@ const formatRelativeTime = (date: Date): string => {
 const getActivityIcon = (type: ActivityItem['type']) => {
   switch (type) {
     case 'maintenance':
-      return { Icon: Wrench, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
+      return { Icon: Wrench, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
     case 'reminder':
-      return { Icon: Bell, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
+      return { Icon: Bell, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
     case 'expense':
-      return { Icon: DollarSign, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
+      return { Icon: DollarSign, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
     case 'vehicle_added':
-      return { Icon: Car, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
+      return { Icon: Car, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
     case 'vehicle_edited':
-      return { Icon: Edit, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
+      return { Icon: Edit, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
     case 'vehicle_deleted':
-      return { Icon: Trash2, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
+      return { Icon: Trash2, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
     default:
-      return { Icon: Clock, bgColor: 'bg-redPrimary', iconColor: 'text-whitePure' };
+      return { Icon: Clock, bgColor: 'bg-redPrimary', iconColor: 'text-onAccent' };
   }
 };
 
@@ -54,7 +54,7 @@ export function ActivityFeed({ activities, loading = false, maxItems = 3 }: Acti
 
   return (
     <div className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-6">
-      <h3 className="text-lg font-semibold text-whitePure mb-4">Recent Activity</h3>
+      <h3 className="text-lg font-semibold text-ink mb-4">Recent Activity</h3>
 
       {loading ? (
         <LoadingState mode="container" label="Loading recent activity..." className="min-h-[220px]" />
@@ -69,7 +69,7 @@ export function ActivityFeed({ activities, loading = false, maxItems = 3 }: Acti
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-darkBg rounded-lg p-4 hover:bg-[#2a2a2a] transition-colors"
+                className="bg-darkBg rounded-lg p-4 hover:bg-surfaceHover transition-colors"
               >
                 <div className="flex items-start gap-4">
                   <div className={`${bgColor} p-3 rounded-full flex-shrink-0`}>
@@ -78,7 +78,7 @@ export function ActivityFeed({ activities, loading = false, maxItems = 3 }: Acti
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-1">
                       <div className="flex-1">
-                        <h4 className="font-semibold text-whitePure">{activity.description}</h4>
+                        <h4 className="font-semibold text-ink">{activity.description}</h4>
                         {activity.vehicleName && (
                           <p className="text-sm text-textSecondary mt-0.5">{activity.vehicleName}</p>
                         )}
@@ -96,7 +96,7 @@ export function ActivityFeed({ activities, loading = false, maxItems = 3 }: Acti
       ) : (
         <div className="text-center py-12 text-textSecondary">
           <Clock className="h-16 w-16 mx-auto mb-4 text-grayBorder" />
-          <p className="text-lg font-medium text-whitePure">No recent activity</p>
+          <p className="text-lg font-medium text-ink">No recent activity</p>
           <p className="text-sm mt-1">Activity will appear here as you use AutoCare+</p>
         </div>
       )}

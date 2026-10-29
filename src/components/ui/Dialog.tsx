@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
@@ -31,21 +31,34 @@ export function Dialog({
   size = "md",
 }: DialogProps) {
   const [mounted, setMounted] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
+    if (!isOpen || !mounted) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    document.body.style.overflow = "hidden";
+    dialogRef.current?.focus();
+    const containFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const controls = Array.from(dialogRef.current.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')).filter(el => el.getClientRects().length);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (!first) { event.preventDefault(); return; }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current)) { event.preventDefault(); first.focus(); }
     };
-  }, [isOpen]);
+    document.addEventListener("keydown", containFocus);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", containFocus);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [isOpen, mounted]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -73,6 +86,12 @@ export function Dialog({
           {/* Mobile adjustment: tighter outer padding on small screens */}
           <div className="fixed inset-0 z-[1001] flex items-center justify-center p-2 sm:p-4">
             <motion.div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={title ? titleId : undefined}
+              aria-label={title ? undefined : "Dialog"}
+              tabIndex={-1}
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -82,11 +101,11 @@ export function Dialog({
             >
               {(title || showCloseButton) && (
                 <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-grayBorder">
-                  {title && <h2 className="text-lg sm:text-xl font-semibold text-whitePure break-words">{title}</h2>}
+                  {title && <h2 id={titleId} className="text-lg sm:text-xl font-semibold text-ink break-words">{title}</h2>}
                   {showCloseButton && (
                     <button
                       onClick={onClose}
-                      className="p-2 rounded-lg hover:bg-[#2a2a2a] transition-colors duration-200"
+                      className="p-2 rounded-lg hover:bg-surfaceHover transition-colors duration-200"
                       aria-label="Close dialog"
                     >
                       <X className="w-5 h-5 text-textSecondary" />

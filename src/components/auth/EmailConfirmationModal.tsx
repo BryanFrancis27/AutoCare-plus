@@ -29,13 +29,13 @@ export function EmailConfirmationModal({ isOpen, onClose, email }: EmailConfirma
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
         >
-          <h3 className="text-2xl font-semibold text-whitePure mb-3">
+          <h3 className="text-2xl font-semibold text-ink mb-3">
             Verify your email
           </h3>
           <p className="text-textSecondary mb-2">
             We&apos;ve sent a confirmation email to:
           </p>
-          <p className="text-whitePure font-medium mb-6">
+          <p className="text-ink font-medium mb-6">
             {email}
           </p>
         </motion.div>
@@ -77,7 +77,7 @@ export function EmailConfirmationModal({ isOpen, onClose, email }: EmailConfirma
           </Button>
           <button
             onClick={() => window.location.href = "/login"}
-            className="text-sm text-textSecondary hover:text-whitePure transition-colors duration-200"
+            className="text-sm text-textSecondary hover:text-ink transition-colors duration-200"
           >
             Go to login page
           </button>

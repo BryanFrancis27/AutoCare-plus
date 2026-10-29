@@ -18,11 +18,11 @@ export function MetricCard({ label, value, icon: Icon, iconBgColor, loading = fa
         ) : (
           <div>
             <p className="text-sm font-medium text-textSecondary">{label}</p>
-            <p className="text-3xl font-bold text-whitePure mt-1">{value}</p>
+            <p className="text-3xl font-bold text-ink mt-1">{value}</p>
           </div>
         )}
         <div className="p-3 rounded-lg bg-redPrimary">
-          <Icon className="h-6 w-6 text-whitePure" />
+          <Icon className="h-6 w-6 text-onAccent" />
         </div>
       </div>
     </div>

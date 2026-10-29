@@ -4,33 +4,33 @@ import { AnimatedBackground } from "@/components/layout/AnimatedBackground";
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#1D1D1C]">
+    <div className="relative min-h-screen overflow-hidden bg-canvas">
       <AnimatedBackground />
 
       <div className="relative z-10">
       {/* Header */}
-      <header className="border-b border-[#3A3A3A]">
+      <header className="border-b border-line">
         {/* Mobile adjustment: responsive container spacing for header */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-0">
-            <span className="text-2xl font-semibold text-white">AutoCare</span>
-            <span className="text-2xl font-semibold text-[#D32F2F]">+</span>
+            <span className="text-2xl font-semibold text-ink">AutoCare</span>
+            <span className="text-2xl font-semibold text-accent">+</span>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20 text-center">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-ink mb-6">
           Track Your Vehicle Maintenance with Ease
         </h1>
-        <p className="text-base sm:text-lg lg:text-xl text-[#B0B0B0] mb-8 max-w-2xl mx-auto">
+        <p className="text-base sm:text-lg lg:text-xl text-muted mb-8 max-w-2xl mx-auto">
           Keep your vehicles in top shape with AutoCare+. Track maintenance, set reminders, 
           and manage expenses all in one place.
         </p>
         <Link
           href="/signup"
-          className="inline-block px-8 py-4 bg-[#D32F2F] text-white text-lg font-semibold rounded-lg transition-all shadow-lg shadow-[#D32F2F]/20 hover:shadow-[0_0_30px_rgba(211,47,47,0.8)] hover:text-white"
+          className="inline-block px-8 py-4 bg-accent text-onAccent text-lg font-semibold rounded-lg transition-all shadow-lg shadow-accent/20 hover:bg-accentHover hover:text-onAccent"
         >
           Start Tracking Now
         </Link>
@@ -38,7 +38,7 @@ export default function LandingPage() {
 
       {/* Features */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-10 sm:mb-12">
+        <h2 className="text-2xl sm:text-3xl font-bold text-ink text-center mb-10 sm:mb-12">
           Everything You Need to Maintain Your Vehicles
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -71,20 +71,20 @@ export default function LandingPage() {
           ].map((feature, index) => (
             <div
               key={index}
-              className="bg-[#262626] border border-[#3A3A3A] rounded-xl p-6 hover:border-[#D32F2F]/30 transition-colors"
+              className="bg-surface border border-line rounded-xl p-6 hover:border-accent/30 transition-colors"
             >
-              <div className="w-12 h-12 rounded-lg bg-[#D32F2F]/10 flex items-center justify-center mb-4">
-                <feature.icon className="w-6 h-6 text-[#D32F2F]" />
+              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                <feature.icon className="w-6 h-6 text-accent" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-              <p className="text-[#B0B0B0]">{feature.description}</p>
+              <h3 className="text-xl font-semibold text-ink mb-2">{feature.title}</h3>
+              <p className="text-muted">{feature.description}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="max-w-7xl mx-auto px-4 sm:px-6 py-8 text-center text-[#B0B0B0]">
+      <footer className="max-w-7xl mx-auto px-4 sm:px-6 py-8 text-center text-muted">
         <p>© 2026 AutoCare+. All rights reserved.</p>
       </footer>
       </div>

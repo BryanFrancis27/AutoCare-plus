@@ -38,9 +38,9 @@ const getNotifIcon = (type: LiveNotification['type']) => {
 
 const getNotifIconBg = (type: LiveNotification['type']) => {
   switch (type) {
-    case 'reminder_overdue': return 'bg-red-500/10 text-red-400';
-    case 'reminder_done': return 'bg-green-500/10 text-green-400';
-    default: return 'bg-[#D32F2F]/10 text-[#D32F2F]';
+    case 'reminder_overdue': return 'bg-red-500/10 text-accent';
+    case 'reminder_done': return 'bg-green-500/10 text-success';
+    default: return 'bg-accent/10 text-accent';
   }
 };
 
@@ -207,33 +207,35 @@ export function NotificationDropdown() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef} onKeyDown={(event) => { if (event.key === "Escape") { setIsOpen(false); dropdownRef.current?.querySelector("button")?.focus(); } }}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 hover:bg-[#262626] rounded-lg transition-colors"
+        className="relative p-3 hover:bg-surfaceHover rounded-lg transition-colors"
         aria-label="Notifications"
+        aria-expanded={isOpen}
+        aria-controls="notifications-panel"
       >
-        <Bell className="w-5 h-5 text-white" />
+        <Bell className="w-5 h-5 text-ink" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#D32F2F] text-white text-xs font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-onAccent text-xs font-bold rounded-full flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-96 bg-[#262626] border border-[#3A3A3A] rounded-xl shadow-2xl z-50 max-h-[32rem] flex flex-col">
-          <div className="p-4 border-b border-[#3A3A3A] flex items-center justify-between">
+        <div id="notifications-panel" className="fixed inset-x-4 top-16 sm:inset-x-auto sm:absolute sm:right-0 sm:top-full mt-2 w-[min(24rem,calc(100vw-2rem))] bg-surface border border-line rounded-xl shadow-2xl z-50 max-h-[min(32rem,calc(100dvh-6rem))] flex flex-col">
+          <div className="p-4 border-b border-line flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-white">Notifications</h3>
-              <p className="text-sm text-[#B0B0B0]">
+              <h3 className="text-lg font-semibold text-ink">Notifications</h3>
+              <p className="text-sm text-muted">
                 {loading ? 'Syncing updates...' : unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
               </p>
             </div>
             {unreadCount > 0 && !loading && (
               <button
                 onClick={markAllAsRead}
-                className="text-sm text-[#D32F2F] hover:text-[#E53935] font-medium transition-colors"
+                className="text-sm text-accent hover:text-accent font-medium transition-colors"
               >
                 Mark all read
               </button>
@@ -247,19 +249,19 @@ export function NotificationDropdown() {
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center">
-                <Bell className="w-12 h-12 text-[#3A3A3A] mx-auto mb-3" />
-                <p className="text-[#B0B0B0]">No notifications</p>
+                <Bell className="w-12 h-12 text-line mx-auto mb-3" />
+                <p className="text-muted">No notifications</p>
               </div>
             ) : (
-              <div className="divide-y divide-[#3A3A3A]">
+              <div className="divide-y divide-line">
                 {notifications.map((n) => {
                   const Icon = getNotifIcon(n.type);
                   const iconClass = getNotifIconBg(n.type);
                   return (
                     <div
                       key={n.id}
-                      className={`p-4 hover:bg-[#1D1D1C] transition-colors group cursor-pointer ${
-                        !n.read ? 'bg-[#1D1D1C]/30' : ''
+                      className={`p-4 hover:bg-canvas transition-colors group cursor-pointer ${
+                        !n.read ? 'bg-canvas/30' : ''
                       }`}
                       onClick={() => markAsRead(n.id)}
                     >
@@ -269,16 +271,17 @@ export function NotificationDropdown() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <h4 className="text-sm font-semibold text-white">{n.title}</h4>
+                            <h4 className="text-sm font-semibold text-ink">{n.title}</h4>
                             <button
+                              aria-label={`Dismiss ${n.title}`}
                               onClick={(e) => { e.stopPropagation(); removeNotification(n.id); }}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-[#3A3A3A] rounded flex-shrink-0"
+                              className="opacity-100 transition-opacity p-1 hover:bg-surfaceHover rounded flex-shrink-0"
                             >
-                              <X className="w-3 h-3 text-[#B0B0B0]" />
+                              <X className="w-3 h-3 text-muted" />
                             </button>
                           </div>
-                          <p className="text-sm text-[#B0B0B0] mb-1 leading-snug">{n.message}</p>
-                          <span className="text-xs text-[#B0B0B0]">{formatRelTime(n.timestamp)}</span>
+                          <p className="text-sm text-muted mb-1 leading-snug">{n.message}</p>
+                          <span className="text-xs text-muted">{formatRelTime(n.timestamp)}</span>
                         </div>
                       </div>
                     </div>

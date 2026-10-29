@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  @apply bg-darkBg text-textPrimary antialiased;
+  @apply bg-canvas text-ink antialiased;
 }
 
 /* Prevent caret rendering on non-editable UI elements (e.g., cards, buttons, containers). */
@@ -22,49 +22,33 @@ textarea,
   caret-color: auto;
 }
 
-a {
-  @apply text-redPrimary hover:text-redPrimaryHover transition-colors;
+@layer base {
+  body { font-size: 1rem; line-height: 1.5; }
+  a { @apply transition-colors; }
+  a:not([class]) { @apply text-accent hover:text-accentHover; }
+  input, select, textarea {
+    @apply border border-controlBorder rounded-lg px-3 py-2 bg-surface text-ink;
+  }
+  input::placeholder, textarea::placeholder { @apply text-muted opacity-100; }
+  input:focus, select:focus, textarea:focus {
+    @apply border-accent ring-2 ring-accent;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  label { @apply text-sm text-muted font-medium; }
+  button:disabled { @apply cursor-not-allowed opacity-50; }
 }
 
-.autocare-button {
-  @apply transition-all duration-200 ease-out;
-}
-
-.autocare-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 0 10px rgba(255, 0, 0, 0.45);
-}
-
-.button-primary {
-  @apply autocare-button inline-flex items-center justify-center rounded-md bg-redPrimary px-4 py-2 text-whitePure font-medium shadow-sm;
-}
-
-.button-primary:hover {
-  @apply text-whitePure;
-}
-
-.button-secondary {
-  @apply autocare-button inline-flex items-center justify-center rounded-md border border-redPrimary px-4 py-2 text-redPrimary font-medium;
-}
-
-.button-secondary:hover {
-  @apply text-redPrimary;
-}
-
-button:not(:disabled) {
-  @apply autocare-button;
-}
-
-.card {
-  @apply bg-containerBg rounded-card border border-grayBorder shadow-sm;
-}
-
-input, select, textarea {
-  @apply border border-grayBorder rounded-md px-3 py-2 bg-containerBg focus:outline-none focus:ring-2 focus:ring-redMuted focus:border-redMuted text-textPrimary;
-}
-
-label {
-  @apply text-sm text-textSecondary font-medium;
+@layer components {
+  .autocare-button { @apply transition-colors duration-150 ease-out; }
+  .button-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2 text-onAccent font-medium shadow-sm hover:bg-accentHover;
+  }
+  .button-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-accent bg-surface px-4 py-2 text-accent font-medium hover:bg-accentSoft;
+  }
+  .card { @apply bg-surface rounded-card border border-line shadow-card; }
+  .skip-link { @apply fixed left-4 top-2 z-[1100] -translate-y-24 rounded-lg bg-accent px-4 py-2 text-onAccent focus:translate-y-0; }
 }
 
 .autocare-maintenance-glow {
@@ -170,4 +154,25 @@ label {
   .autocare-maintenance-symbol {
     transform: translate(-50%, -50%) !important;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Legacy neutral input borders need stronger contrast than decorative dividers. */
+:is(input, select, textarea):is(.border-line, .border-grayBorder, .border-gray-300) {
+  border-color: theme('colors.controlBorder');
+}
+:is(input, select, textarea):focus { border-color: theme('colors.accent'); }
+
+/* Keep focus visible even on legacy controls with focus:outline-none. */
+:is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid theme('colors.accent');
+  outline-offset: 3px;
 }

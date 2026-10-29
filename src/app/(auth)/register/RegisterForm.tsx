@@ -14,7 +14,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
     <button
       type="submit"
       disabled={pending || disabled}
-      className="w-full bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-lg px-4 py-3 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full bg-accent hover:bg-accentHover text-onAccent rounded-lg px-4 py-3 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {pending ? "Creating account..." : "Create Account"}
     </button>
@@ -53,56 +53,56 @@ export function RegisterForm() {
         {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#3A3A3A]" />
+            <div className="w-full border-t border-line" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="bg-[#262626] px-4 text-[#B0B0B0]">Or continue with email</span>
+            <span className="bg-surface px-4 text-muted">Or continue with email</span>
           </div>
         </div>
 
         {/* Display Name Input with Icon */}
         <div>
-          <label htmlFor="displayName" className="block text-sm text-[#B0B0B0] mb-2">
+          <label htmlFor="displayName" className="block text-sm text-muted mb-2">
             Full Name
           </label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B0B0B0]" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
             <input
               id="displayName"
               type="text"
               name="displayName"
               placeholder="John Doe"
               required
-              className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg pl-11 pr-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#E53935] focus:border-transparent transition-all"
+              className="w-full bg-canvas border border-line rounded-lg pl-11 pr-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
             />
           </div>
         </div>
 
         {/* Email Input with Icon */}
         <div>
-          <label htmlFor="email" className="block text-sm text-[#B0B0B0] mb-2">
+          <label htmlFor="email" className="block text-sm text-muted mb-2">
             Email Address
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B0B0B0]" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
             <input
               id="email"
               type="email"
               name="email"
               placeholder="you@example.com"
               required
-              className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg pl-11 pr-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#E53935] focus:border-transparent transition-all"
+              className="w-full bg-canvas border border-line rounded-lg pl-11 pr-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
             />
           </div>
         </div>
 
         {/* Password Input with Icon */}
         <div>
-          <label htmlFor="password" className="block text-sm text-[#B0B0B0] mb-2">
+          <label htmlFor="password" className="block text-sm text-muted mb-2">
             Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B0B0B0]" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
             <input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -111,12 +111,12 @@ export function RegisterForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg pl-11 pr-12 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#E53935] focus:border-transparent transition-all"
+              className="w-full bg-canvas border border-line rounded-lg pl-11 pr-12 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#B0B0B0] hover:text-gray-200 transition-colors"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted hover:text-ink transition-colors"
             >
               {showPassword ? (
                 <EyeOff className="h-5 w-5" />
@@ -134,17 +134,17 @@ export function RegisterForm() {
               transition={{ duration: 0.3 }}
               className="mt-3 space-y-2"
             >
-              <p className="text-xs text-gray-400">Password requirements:</p>
+              <p className="text-xs text-muted">Password requirements:</p>
               <div className="space-y-1">
                 {passwordRequirements.map((req, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <div className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors duration-200 ${
                       req.met ? 'bg-green-500/20' : 'bg-gray-700'
                     }`}>
-                      {req.met && <Check className="w-3 h-3 text-green-400" />}
+                      {req.met && <Check className="w-3 h-3 text-success" />}
                     </div>
                     <span className={`text-xs transition-colors duration-200 ${
-                      req.met ? 'text-green-400' : 'text-gray-500'
+                      req.met ? 'text-success' : 'text-gray-500'
                     }`}>
                       {req.text}
                     </span>
@@ -157,23 +157,23 @@ export function RegisterForm() {
 
         {/* Confirm Password Input with Icon */}
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm text-[#B0B0B0] mb-2">
+          <label htmlFor="confirmPassword" className="block text-sm text-muted mb-2">
             Confirm Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B0B0B0]" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
             <input
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               name="confirmPassword"
               placeholder="••••••••"
               required
-              className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg pl-11 pr-12 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#E53935] focus:border-transparent transition-all"
+              className="w-full bg-canvas border border-line rounded-lg pl-11 pr-12 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#B0B0B0] hover:text-gray-200 transition-colors"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted hover:text-ink transition-colors"
             >
               {showConfirmPassword ? (
                 <EyeOff className="h-5 w-5" />
@@ -189,7 +189,7 @@ export function RegisterForm() {
           <motion.p 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-sm text-red-400 bg-red-950/30 border border-red-900/50 rounded-lg p-3" 
+            className="text-sm text-accent bg-accentSoft border border-accent/30 rounded-lg p-3"
             role="alert"
           >
             {state.error}

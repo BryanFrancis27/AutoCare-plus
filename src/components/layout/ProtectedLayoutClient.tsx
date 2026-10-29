@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { MotionConfig } from 'framer-motion';
 import { Sidebar } from '@/components/layout';
 import { DashboardHeader } from '@/components/dashboard';
 
@@ -14,7 +15,9 @@ export function ProtectedLayoutClient({ children, userName, userEmail }: Protect
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-darkBg">
+    <MotionConfig reducedMotion="user">
+    <div className="min-h-screen bg-canvas text-ink">
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <DashboardHeader
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -26,10 +29,11 @@ export function ProtectedLayoutClient({ children, userName, userEmail }: Protect
       <div className="flex pt-16 min-w-0">
         <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         
-        <main className="flex-1 lg:ml-64 min-w-0">
+        <main id="main-content" tabIndex={-1} className="flex-1 lg:ml-64 min-w-0">
           {children}
         </main>
       </div>
     </div>
+    </MotionConfig>
   );
 }

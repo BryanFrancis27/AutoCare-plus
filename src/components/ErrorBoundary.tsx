@@ -50,7 +50,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-redLight mb-4">
               <AlertTriangle className="h-8 w-8 text-redPrimary" />
             </div>
-            <h2 className="text-xl font-semibold text-whitePure mb-2">
+            <h2 className="text-xl font-semibold text-ink mb-2">
               Something went wrong
             </h2>
             <p className="text-textSecondary mb-6">
@@ -82,7 +82,7 @@ export function DashboardErrorBoundary({ children }: { children: ReactNode }) {
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-redLight mb-3">
               <AlertTriangle className="h-6 w-6 text-redPrimary" />
             </div>
-            <h3 className="text-lg font-semibold text-whitePure mb-1">
+            <h3 className="text-lg font-semibold text-ink mb-1">
               Failed to load data
             </h3>
             <p className="text-sm text-textSecondary">
