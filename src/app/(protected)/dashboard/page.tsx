@@ -202,7 +202,7 @@ export default function DashboardPage() {
 
       {/* Page Title */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-whitePure">Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-ink">Dashboard</h1>
         <p className="text-textSecondary mt-1">
           Overview of your vehicles, recent activity, and reminders.
         </p>
@@ -257,18 +257,18 @@ export default function DashboardPage() {
         transition={{ delay: 0.4 }}
         className="bg-containerBg rounded-xl shadow-sm border border-grayBorder p-4 sm:p-6"
       >
-        <h3 className="text-lg font-semibold text-whitePure mb-4">Quick Actions</h3>
+        <h3 className="text-lg font-semibold text-ink mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action) => (
             <button
               key={action.id}
               onClick={action.onClick}
-              className="flex items-center gap-3 p-4 bg-darkBg hover:bg-[#2a2a2a] rounded-lg transition-colors group text-left"
+              className="flex items-center gap-3 p-4 bg-darkBg hover:bg-surfaceHover rounded-lg transition-colors group text-left"
             >
               <div className="p-2 rounded-lg bg-redPrimary group-hover:scale-110 transition-transform flex-shrink-0">
-                <action.icon className="h-5 w-5 text-whitePure" />
+                <action.icon className="h-5 w-5 text-onAccent" />
               </div>
-              <span className="text-sm font-medium text-whitePure">{action.label}</span>
+              <span className="text-sm font-medium text-ink">{action.label}</span>
             </button>
           ))}
         </div>

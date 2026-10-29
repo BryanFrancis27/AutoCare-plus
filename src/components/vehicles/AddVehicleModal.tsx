@@ -476,18 +476,18 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
           >
-            <div className="relative bg-[#262626] border border-[#3A3A3A] rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
+            <div className="relative bg-surface border border-line rounded-2xl w-full max-w-2xl my-8 shadow-2xl">
               {loading && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/45 backdrop-blur-sm">
+                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-surface/95 backdrop-blur-sm">
                   <LoadingState mode="container" label={loadingLabel} className="min-h-[220px] w-[min(92%,460px)]" />
                 </div>
               )}
               {/* Header */}
               {/* Mobile adjustment: prevent title/meta clipping with smaller header spacing */}
-              <div className="flex items-center justify-between gap-3 p-4 sm:p-6 border-b border-[#3A3A3A]">
+              <div className="flex items-center justify-between gap-3 p-4 sm:p-6 border-b border-line">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">{isEditMode ? 'Edit Vehicle' : 'Add New Vehicle'}</h2>
-                  <p className="text-sm text-[#B0B0B0] mt-1">
+                  <h2 className="text-2xl font-bold text-ink">{isEditMode ? 'Edit Vehicle' : 'Add New Vehicle'}</h2>
+                  <p className="text-sm text-muted mt-1">
                     Step {currentStep} of 3: {
                       currentStep === 1 ? 'Basic Information' :
                       currentStep === 2 ? 'Vehicle Details' :
@@ -498,9 +498,9 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                 <button
                   onClick={handleClose}
                   disabled={loading}
-                  className="p-2 hover:bg-[#3A3A3A] rounded-lg transition-colors"
+                  className="p-2 hover:bg-surfaceHover rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-5 h-5 text-ink" />
                 </button>
               </div>
 
@@ -511,7 +511,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                     <div
                       key={step}
                       className={`h-1 flex-1 rounded-full transition-colors ${
-                        step <= currentStep ? 'bg-[#D32F2F]' : 'bg-[#3A3A3A]'
+                        step <= currentStep ? 'bg-accent' : 'bg-line'
                       }`}
                     />
                   ))}
@@ -529,96 +529,96 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                       className="space-y-4"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-[#D32F2F]/10 flex items-center justify-center">
-                          <Car className="w-5 h-5 text-[#D32F2F]" />
+                        <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                          <Car className="w-5 h-5 text-accent" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-white">Basic Information</h3>
-                          <p className="text-sm text-[#B0B0B0]">Essential details about your vehicle</p>
+                          <h3 className="text-lg font-semibold text-ink">Basic Information</h3>
+                          <p className="text-sm text-muted">Essential details about your vehicle</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Make */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
-                            Make <span className="text-[#D32F2F]">*</span>
+                          <label className="block text-sm text-muted mb-2">
+                            Make <span className="text-accent">*</span>
                           </label>
                           <select
                             value={formData.make}
                             onChange={(e) => handleInputChange('make', e.target.value)}
-                            className={`w-full bg-[#1D1D1C] border ${
-                              errors.make ? 'border-red-500' : 'border-[#3A3A3A]'
-                            } rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all`}
+                            className={`w-full bg-canvas border ${
+                              errors.make ? 'border-red-500' : 'border-line'
+                            } rounded-lg px-4 py-3 text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all`}
                           >
                             <option value="">Select Make</option>
                             {popularMakes.map(make => (
                               <option key={make} value={make}>{make}</option>
                             ))}
                           </select>
-                          {errors.make && <p className="text-red-500 text-xs mt-1">{errors.make}</p>}
+                          {errors.make && <p className="text-accent text-xs mt-1">{errors.make}</p>}
                         </div>
 
                         {/* Model */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
-                            Model <span className="text-[#D32F2F]">*</span>
+                          <label className="block text-sm text-muted mb-2">
+                            Model <span className="text-accent">*</span>
                           </label>
                           <input
                             type="text"
                             value={formData.model}
                             onChange={(e) => handleInputChange('model', e.target.value)}
                             placeholder="e.g., Camry"
-                            className={`w-full bg-[#1D1D1C] border ${
-                              errors.model ? 'border-red-500' : 'border-[#3A3A3A]'
-                            } rounded-lg px-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all`}
+                            className={`w-full bg-canvas border ${
+                              errors.model ? 'border-red-500' : 'border-line'
+                            } rounded-lg px-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all`}
                           />
-                          {errors.model && <p className="text-red-500 text-xs mt-1">{errors.model}</p>}
+                          {errors.model && <p className="text-accent text-xs mt-1">{errors.model}</p>}
                         </div>
 
                         {/* Year */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
-                            Year <span className="text-[#D32F2F]">*</span>
+                          <label className="block text-sm text-muted mb-2">
+                            Year <span className="text-accent">*</span>
                           </label>
                           <select
                             value={formData.year}
                             onChange={(e) => handleInputChange('year', e.target.value)}
-                            className={`w-full bg-[#1D1D1C] border ${
-                              errors.year ? 'border-red-500' : 'border-[#3A3A3A]'
-                            } rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all`}
+                            className={`w-full bg-canvas border ${
+                              errors.year ? 'border-red-500' : 'border-line'
+                            } rounded-lg px-4 py-3 text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all`}
                           >
                             <option value="">Select Year</option>
                             {years.map(year => (
                               <option key={year} value={year}>{year}</option>
                             ))}
                           </select>
-                          {errors.year && <p className="text-red-500 text-xs mt-1">{errors.year}</p>}
+                          {errors.year && <p className="text-accent text-xs mt-1">{errors.year}</p>}
                         </div>
 
                         {/* Vehicle Type */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
-                            Vehicle Type <span className="text-[#D32F2F]">*</span>
+                          <label className="block text-sm text-muted mb-2">
+                            Vehicle Type <span className="text-accent">*</span>
                           </label>
                           <select
                             value={formData.vehicleType}
                             onChange={(e) => handleInputChange('vehicleType', e.target.value)}
-                            className={`w-full bg-[#1D1D1C] border ${
-                              errors.vehicleType ? 'border-red-500' : 'border-[#3A3A3A]'
-                            } rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all`}
+                            className={`w-full bg-canvas border ${
+                              errors.vehicleType ? 'border-red-500' : 'border-line'
+                            } rounded-lg px-4 py-3 text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all`}
                           >
                             <option value="">Select Type</option>
                             {VEHICLE_TYPE_OPTIONS.map(type => (
                               <option key={type.value} value={type.value}>{type.label}</option>
                             ))}
                           </select>
-                          {errors.vehicleType && <p className="text-red-500 text-xs mt-1">{errors.vehicleType}</p>}
+                          {errors.vehicleType && <p className="text-accent text-xs mt-1">{errors.vehicleType}</p>}
                         </div>
 
                         {/* License Plate */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
+                          <label className="block text-sm text-muted mb-2">
                             License Plate
                           </label>
                           <input
@@ -626,13 +626,13 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                             value={formData.licensePlate}
                             onChange={(e) => handleInputChange('licensePlate', e.target.value.toUpperCase())}
                             placeholder="ABC-1234"
-                            className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg px-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all"
+                            className="w-full bg-canvas border border-line rounded-lg px-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
                           />
                         </div>
 
                         {/* Color */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
+                          <label className="block text-sm text-muted mb-2">
                             Color
                           </label>
                           <input
@@ -640,7 +640,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                             value={formData.color}
                             onChange={(e) => handleInputChange('color', e.target.value)}
                             placeholder="e.g., Silver"
-                            className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg px-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all"
+                            className="w-full bg-canvas border border-line rounded-lg px-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
                           />
                         </div>
                       </div>
@@ -655,71 +655,71 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                       className="space-y-4"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-[#D32F2F]/10 flex items-center justify-center">
-                          <FileText className="w-5 h-5 text-[#D32F2F]" />
+                        <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                          <FileText className="w-5 h-5 text-accent" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-white">Vehicle Details</h3>
-                          <p className="text-sm text-[#B0B0B0]">Technical specifications</p>
+                          <h3 className="text-lg font-semibold text-ink">Vehicle Details</h3>
+                          <p className="text-sm text-muted">Technical specifications</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Fuel Type */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
-                            Fuel Type <span className="text-[#D32F2F]">*</span>
+                          <label className="block text-sm text-muted mb-2">
+                            Fuel Type <span className="text-accent">*</span>
                           </label>
                           <select
                             value={formData.fuelType}
                             onChange={(e) => handleInputChange('fuelType', e.target.value)}
-                            className={`w-full bg-[#1D1D1C] border ${
-                              errors.fuelType ? 'border-red-500' : 'border-[#3A3A3A]'
-                            } rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all`}
+                            className={`w-full bg-canvas border ${
+                              errors.fuelType ? 'border-red-500' : 'border-line'
+                            } rounded-lg px-4 py-3 text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all`}
                           >
                             <option value="">Select Fuel Type</option>
                             {POWERTRAIN_OPTIONS.map(type => (
                               <option key={type.value} value={type.value}>{type.label}</option>
                             ))}
                           </select>
-                          {errors.fuelType && <p className="text-red-500 text-xs mt-1">{errors.fuelType}</p>}
+                          {errors.fuelType && <p className="text-accent text-xs mt-1">{errors.fuelType}</p>}
                         </div>
 
                         {/* Transmission */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
-                            Transmission <span className="text-[#D32F2F]">*</span>
+                          <label className="block text-sm text-muted mb-2">
+                            Transmission <span className="text-accent">*</span>
                           </label>
                           <select
                             value={formData.transmission}
                             onChange={(e) => handleInputChange('transmission', e.target.value)}
-                            className={`w-full bg-[#1D1D1C] border ${
-                              errors.transmission ? 'border-red-500' : 'border-[#3A3A3A]'
-                            } rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all`}
+                            className={`w-full bg-canvas border ${
+                              errors.transmission ? 'border-red-500' : 'border-line'
+                            } rounded-lg px-4 py-3 text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all`}
                           >
                             <option value="">Select Transmission</option>
                             {transmissionTypes.map(type => (
                               <option key={type} value={type}>{type}</option>
                             ))}
                           </select>
-                          {errors.transmission && <p className="text-red-500 text-xs mt-1">{errors.transmission}</p>}
+                          {errors.transmission && <p className="text-accent text-xs mt-1">{errors.transmission}</p>}
                         </div>
 
                         {/* Current Mileage */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
-                            Current Mileage (miles) <span className="text-[#D32F2F]">*</span>
+                          <label className="block text-sm text-muted mb-2">
+                            Current Mileage (miles) <span className="text-accent">*</span>
                           </label>
                           <input
                             type="text"
                             value={formData.currentMileage}
                             onChange={(e) => handleInputChange('currentMileage', e.target.value)}
                             placeholder="e.g., 45000"
-                            className={`w-full bg-[#1D1D1C] border ${
-                              errors.currentMileage ? 'border-red-500' : 'border-[#3A3A3A]'
-                            } rounded-lg px-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all`}
+                            className={`w-full bg-canvas border ${
+                              errors.currentMileage ? 'border-red-500' : 'border-line'
+                            } rounded-lg px-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all`}
                           />
-                          {errors.currentMileage && <p className="text-red-500 text-xs mt-1">{errors.currentMileage}</p>}
+                          {errors.currentMileage && <p className="text-accent text-xs mt-1">{errors.currentMileage}</p>}
                         </div>
                       </div>
                     </motion.div>
@@ -733,45 +733,45 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                       className="space-y-4"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-[#D32F2F]/10 flex items-center justify-center">
-                          <span className="text-[#D32F2F] font-semibold text-lg leading-none">₱</span>
+                        <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                          <span className="text-accent font-semibold text-lg leading-none">₱</span>
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-white">Additional Information</h3>
-                          <p className="text-sm text-[#B0B0B0]">Purchase details and notes</p>
+                          <h3 className="text-lg font-semibold text-ink">Additional Information</h3>
+                          <p className="text-sm text-muted">Purchase details and notes</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Purchase Date */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
+                          <label className="block text-sm text-muted mb-2">
                             Purchase Date
                           </label>
                           <div className="relative">
-                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B0B0B0]" />
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                             <input
                               type="date"
                               value={formData.purchaseDate}
                               onChange={(e) => handleInputChange('purchaseDate', e.target.value)}
-                              className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg pl-11 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all"
+                              className="w-full bg-canvas border border-line rounded-lg pl-11 pr-4 py-3 text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
                             />
                           </div>
                         </div>
 
                         {/* Purchase Price */}
                         <div>
-                          <label className="block text-sm text-[#B0B0B0] mb-2">
+                          <label className="block text-sm text-muted mb-2">
                             Purchase Price (₱)
                           </label>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B0B0B0] font-semibold">₱</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted font-semibold">₱</span>
                             <input
                               type="text"
                               value={formData.purchasePrice}
                               onChange={(e) => handleInputChange('purchasePrice', e.target.value)}
                               placeholder="25000"
-                              className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg pl-9 pr-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all"
+                              className="w-full bg-canvas border border-line rounded-lg pl-9 pr-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
                             />
                           </div>
                         </div>
@@ -779,7 +779,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
 
                       {/* Notes */}
                       <div>
-                        <label className="block text-sm text-[#B0B0B0] mb-2">
+                        <label className="block text-sm text-muted mb-2">
                           Notes
                         </label>
                         <textarea
@@ -787,13 +787,13 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                           onChange={(e) => handleInputChange('notes', e.target.value)}
                           placeholder="Add any additional notes about your vehicle..."
                           rows={4}
-                          className="w-full bg-[#1D1D1C] border border-[#3A3A3A] rounded-lg px-4 py-3 text-white placeholder:text-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#D32F2F] focus:border-transparent transition-all resize-none"
+                          className="w-full bg-canvas border border-line rounded-lg px-4 py-3 text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all resize-none"
                         />
                       </div>
 
                       {/* Photo Upload (Optional) */}
                       <div>
-                        <label className="block text-sm text-[#B0B0B0] mb-2">
+                        <label className="block text-sm text-muted mb-2">
                           Vehicle Photo (Optional)
                         </label>
                         {imagePreview ? (
@@ -806,33 +806,33 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                             <button
                               type="button"
                               onClick={removeImage}
-                              className="absolute top-2 right-2 p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors"
+                              className="absolute top-2 right-2 p-2 bg-accent rounded-full hover:bg-accentHover transition-colors"
                             >
-                              <X className="w-4 h-4 text-white" />
+                              <X className="w-4 h-4 text-onAccent" />
                             </button>
                           </div>
                         ) : (
-                          <label className="block border-2 border-dashed border-[#3A3A3A] rounded-lg p-6 text-center hover:border-[#D32F2F]/50 transition-colors cursor-pointer">
+                          <label className="block border-2 border-dashed border-line rounded-lg p-6 text-center hover:border-accent/50 transition-colors cursor-pointer">
                             <input
                               type="file"
                               accept="image/*"
                               onChange={handleImageChange}
                               className="hidden"
                             />
-                            <Upload className="w-8 h-8 text-[#B0B0B0] mx-auto mb-2" />
-                            <p className="text-sm text-[#B0B0B0]">
+                            <Upload className="w-8 h-8 text-muted mx-auto mb-2" />
+                            <p className="text-sm text-muted">
                               Click to upload or drag and drop
                             </p>
-                            <p className="text-xs text-[#B0B0B0] mt-1">
+                            <p className="text-xs text-muted mt-1">
                               PNG, JPG up to {MAX_VEHICLE_IMAGE_SIZE_MB}MB after automatic optimization
                             </p>
-                            <p className="text-xs text-[#B0B0B0] mt-1">
+                            <p className="text-xs text-muted mt-1">
                               Raw file processing limit: {MAX_RAW_IMAGE_SIZE_MB}MB
                             </p>
                           </label>
                         )}
                         {isProcessingImage && (
-                          <p className="text-xs text-[#B0B0B0] mt-2">Optimizing image for upload...</p>
+                          <p className="text-xs text-muted mt-2">Optimizing image for upload...</p>
                         )}
                       </div>
                     </motion.div>
@@ -841,12 +841,12 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
 
                 {/* Footer */}
                 {/* Mobile adjustment: footer controls stack for reachability on phones */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 sm:p-6 border-t border-[#3A3A3A]">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 sm:p-6 border-t border-line">
                   <button
                     type="button"
                     onClick={handleClose}
                     disabled={loading}
-                    className="w-full sm:w-auto px-6 py-3 text-white hover:bg-[#3A3A3A] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-6 py-3 text-ink hover:bg-surfaceHover rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -856,7 +856,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                         type="button"
                         onClick={handleBack}
                         disabled={loading}
-                        className="w-full sm:w-auto px-6 py-3 bg-[#3A3A3A] text-white rounded-lg hover:bg-[#4A4A4A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto px-6 py-3 bg-line text-ink rounded-lg hover:bg-surfaceHover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Back
                       </button>
@@ -866,7 +866,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                         type="button"
                         onClick={handleNext}
                         disabled={loading}
-                        className="w-full sm:w-auto px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto px-6 py-3 bg-accent text-onAccent rounded-lg hover:bg-accentHover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Next
                       </button>
@@ -875,7 +875,7 @@ export function AddVehicleModal({ isOpen, onClose, mode = 'create', vehicle = nu
                         type="button"
                         onClick={handleSubmit}
                         disabled={loading || isProcessingImage}
-                        className="w-full sm:w-auto px-6 py-3 bg-[#D32F2F] text-white rounded-lg hover:bg-[#B71C1C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto px-6 py-3 bg-accent text-onAccent rounded-lg hover:bg-accentHover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {loading ? loadingLabel : (isEditMode ? 'Save Vehicle' : 'Add Vehicle')}
                       </button>

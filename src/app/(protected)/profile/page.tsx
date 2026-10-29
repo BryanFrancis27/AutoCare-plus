@@ -60,12 +60,12 @@ export default async function ProfilePage() {
         {/* Mobile adjustment: stack avatar and profile text for narrow viewports */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
           <div className="w-20 h-20 rounded-full bg-redPrimary flex items-center justify-center flex-shrink-0 shadow-lg">
-            <span className="text-3xl font-bold text-whitePure">
+            <span className="text-3xl font-bold text-onAccent">
               {fullName.charAt(0).toUpperCase()}
             </span>
           </div>
           <div className="min-w-0">
-            <h2 className="text-xl sm:text-2xl font-bold text-whitePure break-words">{fullName}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-ink break-words">{fullName}</h2>
             <p className="text-textSecondary mt-1 break-words">{email}</p>
             <span className="inline-flex items-center gap-1.5 mt-2 px-3 py-0.5 bg-redPrimary/20 text-redPrimary text-xs font-medium rounded-full">
               <Shield className="h-3 w-3" />
@@ -76,7 +76,7 @@ export default async function ProfilePage() {
       </div>
 
       <div className="bg-containerBg rounded-xl border border-grayBorder p-4 sm:p-6">
-        <h3 className="text-lg font-semibold text-whitePure mb-2">Account Information</h3>
+        <h3 className="text-lg font-semibold text-ink mb-2">Account Information</h3>
         <div className="divide-y divide-grayBorder">
           {infoRows.map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-center gap-4 py-4">
@@ -87,7 +87,7 @@ export default async function ProfilePage() {
                 <p className="text-xs font-medium text-textSecondary uppercase tracking-wide">
                   {label}
                 </p>
-                <p className="text-sm font-semibold text-whitePure mt-0.5 break-words">{value}</p>
+                <p className="text-sm font-semibold text-ink mt-0.5 break-words">{value}</p>
               </div>
             </div>
           ))}

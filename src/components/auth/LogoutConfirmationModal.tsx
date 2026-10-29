@@ -34,7 +34,7 @@ export function LogoutConfirmationModal({ isOpen, onClose, onConfirm }: LogoutCo
               <LogOut className="w-6 h-6 text-redPrimary" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-whitePure mb-2">
+              <h3 className="text-lg font-semibold text-ink mb-2">
                 Are you sure you want to logout?
               </h3>
               <p className="text-sm text-textSecondary">
@@ -65,14 +65,14 @@ export function LogoutConfirmationModal({ isOpen, onClose, onConfirm }: LogoutCo
           <button
             onClick={onClose}
             disabled={isLoggingOut}
-            className="flex-1 px-4 py-3 border border-grayBorder rounded-xl text-sm font-medium text-whitePure bg-containerBg hover:bg-[#2a2a2a] focus:outline-none focus:ring-2 focus:ring-redPrimary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="flex-1 px-4 py-3 border border-grayBorder rounded-xl text-sm font-medium text-ink bg-containerBg hover:bg-surfaceHover focus:outline-none focus:ring-2 focus:ring-redPrimary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
             disabled={isLoggingOut}
-            className="flex-1 px-4 py-3 border border-transparent rounded-xl text-sm font-medium text-whitePure bg-redPrimary hover:bg-redPrimaryHover focus:outline-none focus:ring-2 focus:ring-redPrimary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="flex-1 px-4 py-3 border border-transparent rounded-xl text-sm font-medium text-onAccent bg-redPrimary hover:bg-redPrimaryHover focus:outline-none focus:ring-2 focus:ring-redPrimary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             {isLoggingOut ? (
               <span className="flex items-center justify-center">

@@ -28,12 +28,12 @@ export function QuickActionButton({
     <Link
       href={href}
       onClick={handleClick}
-      className="flex items-center gap-3 p-4 bg-darkBg hover:bg-[#2a2a2a] rounded-lg transition-colors group"
+      className="flex items-center gap-3 p-4 bg-darkBg hover:bg-surfaceHover rounded-lg transition-colors group"
     >
       <div className="p-2 rounded-lg bg-redPrimary group-hover:scale-110 transition-transform">
-        <Icon className="h-5 w-5 text-whitePure" />
+        <Icon className="h-5 w-5 text-onAccent" />
       </div>
-      <span className="text-sm font-medium text-whitePure">{label}</span>
+      <span className="text-sm font-medium text-ink">{label}</span>
     </Link>
   );
 }

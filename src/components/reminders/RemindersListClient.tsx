@@ -120,14 +120,14 @@ function VehicleCatalogCard({ vehicle, onOpen }: VehicleCatalogCardProps) {
             </div>
           </div>
         )}
-        <div className="absolute left-4 top-4 inline-flex rounded-full border border-redPrimary/30 bg-black/70 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-redPrimary backdrop-blur-sm">
+        <div className="absolute left-4 top-4 inline-flex rounded-full border border-redPrimary/30 bg-surface px-3 py-1 text-xs font-semibold tracking-[0.14em] text-redPrimary backdrop-blur-sm">
           {vehicle.reminders.length} {vehicle.reminders.length === 1 ? "REMINDER" : "REMINDERS"}
         </div>
       </div>
 
       <div className="space-y-4 p-4 sm:p-5">
         <div className="space-y-1">
-          <h3 className="text-lg sm:text-xl font-semibold text-whitePure break-words">{vehicle.displayName}</h3>
+          <h3 className="text-lg sm:text-xl font-semibold text-ink break-words">{vehicle.displayName}</h3>
           <p className="text-sm text-textSecondary">Model: {vehicle.model}</p>
           <p className="text-sm text-textSecondary">
             {vehicle.plate_number || "Plate number not added"}
@@ -153,7 +153,7 @@ function VehicleCatalogCard({ vehicle, onOpen }: VehicleCatalogCardProps) {
           <span>
             {vehicle.current_mileage != null ? formatMileage(vehicle.current_mileage) : "Mileage not set"}
           </span>
-          <span className="inline-flex items-center gap-2 font-medium text-whitePure">
+          <span className="inline-flex items-center gap-2 font-medium text-ink">
             View reminders
             <ChevronRight className="h-4 w-4 text-redPrimary transition-transform duration-200 group-hover:translate-x-1" />
           </span>
@@ -281,7 +281,7 @@ function ReminderDetailsDialog({
         )}
 
         {modalError && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-accent">
             {modalError}
           </div>
         )}
@@ -308,7 +308,7 @@ function ReminderDetailsDialog({
                         <Car className="h-10 w-10" />
                       </div>
                       <div>
-                        <p className="text-base font-semibold text-whitePure">No vehicle image available</p>
+                        <p className="text-base font-semibold text-ink">No vehicle image available</p>
                         <p className="text-sm text-textSecondary">A placeholder is shown until a vehicle photo is added.</p>
                       </div>
                     </div>
@@ -321,17 +321,17 @@ function ReminderDetailsDialog({
                 <div className="rounded-xl border border-grayBorder bg-darkBg p-5">
                 <div className="mb-4 flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-redPrimary" />
-                  <h3 className="text-base font-semibold text-whitePure">Maintenance Information</h3>
+                  <h3 className="text-base font-semibold text-ink">Maintenance Information</h3>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="rounded-lg border border-grayBorder bg-containerBg p-4 sm:col-span-2">
                     <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Maintenance type</p>
-                    <p className="mt-2 text-base font-medium text-whitePure">{modalData.reminder.reminderType}</p>
+                    <p className="mt-2 text-base font-medium text-ink">{modalData.reminder.reminderType}</p>
                   </div>
                   <div className="rounded-lg border border-grayBorder bg-containerBg p-4 sm:col-span-2">
                     <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Scheduled date</p>
-                    <p className="mt-2 text-base font-medium text-whitePure">
+                    <p className="mt-2 text-base font-medium text-ink">
                       {modalData.reminder.dueDate ? formatDueDate(modalData.reminder.dueDate) : "Not scheduled"}
                     </p>
                   </div>
@@ -347,30 +347,30 @@ function ReminderDetailsDialog({
                 <div className="rounded-xl border border-grayBorder bg-darkBg p-5">
                 <div className="mb-4 flex items-center gap-2">
                   <GaugeCircle className="h-4 w-4 text-redPrimary" />
-                  <h3 className="text-base font-semibold text-whitePure">Vehicle Information</h3>
+                  <h3 className="text-base font-semibold text-ink">Vehicle Information</h3>
                 </div>
 
                 {modalData.vehicle ? (
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="rounded-lg border border-grayBorder bg-containerBg p-4 sm:col-span-2">
                       <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Vehicle name</p>
-                      <p className="mt-2 text-base font-medium text-whitePure">{modalData.vehicle.displayName}</p>
+                      <p className="mt-2 text-base font-medium text-ink">{modalData.vehicle.displayName}</p>
                     </div>
                     <div className="rounded-lg border border-grayBorder bg-containerBg p-4 sm:col-span-2">
                       <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Vehicle model</p>
-                      <p className="mt-2 text-base font-medium text-whitePure">
+                      <p className="mt-2 text-base font-medium text-ink">
                         {modalData.vehicle.make} {modalData.vehicle.model}
                       </p>
                     </div>
                     <div className="rounded-lg border border-grayBorder bg-containerBg p-4">
                       <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Mileage</p>
-                      <p className="mt-2 text-base font-medium text-whitePure">
+                      <p className="mt-2 text-base font-medium text-ink">
                         {modalData.vehicle.currentMileage != null ? formatMileage(modalData.vehicle.currentMileage) : "Not set"}
                       </p>
                     </div>
                     <div className="rounded-lg border border-grayBorder bg-containerBg p-4">
                       <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Last service date</p>
-                      <p className="mt-2 text-base font-medium text-whitePure">
+                      <p className="mt-2 text-base font-medium text-ink">
                         {modalData.vehicle.lastServiceDate ? formatDueDate(modalData.vehicle.lastServiceDate) : "No service records"}
                       </p>
                     </div>
@@ -391,7 +391,7 @@ function ReminderDetailsDialog({
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto rounded-lg px-4 py-2 text-white transition-colors hover:bg-[#3A3A3A]"
+            className="w-full sm:w-auto rounded-lg px-4 py-2 text-ink transition-colors hover:bg-surfaceHover"
           >
             Close
           </button>
@@ -400,7 +400,7 @@ function ReminderDetailsDialog({
               type="button"
               onClick={onMarkDone}
               disabled={isCompleting}
-              className="w-full sm:w-auto rounded-lg bg-[#D32F2F] px-4 py-2 text-white transition-colors hover:bg-[#B71C1C] disabled:opacity-50"
+              className="w-full sm:w-auto rounded-lg bg-accent px-4 py-2 text-onAccent transition-colors hover:bg-accentHover disabled:opacity-50"
             >
               {isCompleting ? "Updating..." : "Mark as DONE"}
             </button>
@@ -548,11 +548,11 @@ export function RemindersListClient({ initialReminders, initialVehicles, initial
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="p-4">
             <div className="text-sm font-medium text-textSecondary">Registered Vehicles</div>
-            <div className="text-3xl font-bold text-whitePure">{initialVehicles.length}</div>
+            <div className="text-3xl font-bold text-ink">{initialVehicles.length}</div>
           </Card>
           <Card className="p-4">
             <div className="text-sm font-medium text-textSecondary">Active Reminders</div>
-            <div className="text-3xl font-bold text-whitePure">{reminderCounts.overdue + reminderCounts.upcoming}</div>
+            <div className="text-3xl font-bold text-ink">{reminderCounts.overdue + reminderCounts.upcoming}</div>
           </Card>
           <Card className="p-4">
             <div className="text-sm font-medium text-textSecondary">Overdue Services</div>
@@ -634,7 +634,7 @@ export function RemindersListClient({ initialReminders, initialVehicles, initial
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div>
                       <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Vehicle Overview</p>
-                      <h3 className="mt-2 text-2xl font-semibold text-whitePure">{selectedVehicle.displayName}</h3>
+                      <h3 className="mt-2 text-2xl font-semibold text-ink">{selectedVehicle.displayName}</h3>
                       <p className="mt-2 text-sm text-textSecondary">
                         {selectedVehicle.plate_number || "Plate number not added"}
                       </p>

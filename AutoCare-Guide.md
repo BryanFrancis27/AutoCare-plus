@@ -232,27 +232,39 @@ These templates are used to generate reminders.
 
 # 9. UI DESIGN SYSTEM
 
-AutoCare+ follows a **clean dark dashboard design**.
+AutoCare+ follows a **clean light automotive application design** with restrained deep-red accents. This replaces the previous dark dashboard direction.
 
-Primary colors:
+Central semantic tokens in `tailwind.config.ts`:
 
-Background
-→ Black
-
-Accent
-→ Red
-
-Primary Text
-→ White
-
-Neutral UI
-→ Gray
+| Token | Value | Purpose |
+| --- | --- | --- |
+| canvas | #F8FAFC | Page background |
+| surface | #FFFFFF | Header, sidebar, cards, dialogs, inputs |
+| ink | #111827 | Primary text |
+| muted | #64748B | Secondary text |
+| line | #E2E8F0 | Decorative borders and dividers |
+| accent | #B91C1C | Primary actions and active navigation |
+| accentHover | #991B1B | Primary action hover |
+| accentSoft | #FEF2F2 | Subtle emphasis and active navigation |
+| onAccent | #FFFFFF | Foreground on filled accents |
+| surfaceHover | #F1F5F9 | Neutral hover feedback |
+| controlBorder | #64748B | Visible form-control boundaries |
+| success | #166534 | Completed/healthy indicators |
+| caution | #92400E | Medium priority |
+| warning | #9A3412 | High priority |
 
 Rules:
 
-- Avoid introducing random colors
-- Maintain strong contrast
-- Use red only for highlights, warnings, and active states
+- Prefer semantic Tailwind tokens; legacy aliases support incremental page compatibility.
+- Preserve the existing font stack. Body text uses 1rem/1.5; labels 0.875rem; page headings 1.5-1.875rem semibold.
+- Use Tailwind's 4px spacing scale: 16px mobile gutters, 24px desktop gutters, 16-24px card padding and 8-12px control gaps.
+- Use 8px control radii, 12px cards, subtle shadow-card and one-pixel borders.
+- Use red for primary actions, active navigation and meaningful warnings; pair status colors with text or icons.
+- Use ink/muted on ordinary surfaces and white only on filled accents or dark image overlays.
+- Keep keyboard focus visible and use aria-current on active routes; shell navigation targets are at least 44px.
+- Mobile navigation supports Escape, focus containment/return, close control and backdrop dismissal. Hidden links must not receive focus.
+- Respect reduced motion. Use subtle color changes for hover feedback without glow or movement.
+- Preserve routes, authentication, logout confirmation, component structure and business workflows. Full page redesigns are separate tasks.
 
 ---
 

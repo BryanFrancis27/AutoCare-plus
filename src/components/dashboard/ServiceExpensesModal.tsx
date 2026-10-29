@@ -106,23 +106,23 @@ export function ServiceExpensesModal({ isOpen, onClose }: ServiceExpensesModalPr
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="bg-[#1D1D1C] border border-[#3A3A3A] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col"
+              className="bg-canvas border border-line rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-[#3A3A3A] flex-shrink-0">
+              <div className="flex items-center justify-between p-6 border-b border-line flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-redPrimary">
-                    <DollarSign className="h-5 w-5 text-whitePure" />
+                    <DollarSign className="h-5 w-5 text-onAccent" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-whitePure">Service & Expenses</h2>
+                    <h2 className="text-lg font-semibold text-ink">Service & Expenses</h2>
                     <p className="text-xs text-textSecondary mt-0.5">Maintenance history across all vehicles</p>
                   </div>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-[#262626] rounded-lg transition-colors"
+                  className="p-2 hover:bg-surfaceHover rounded-lg transition-colors"
                 >
                   <X className="h-5 w-5 text-textSecondary" />
                 </button>
@@ -139,7 +139,7 @@ export function ServiceExpensesModal({ isOpen, onClose }: ServiceExpensesModalPr
                 ) : summaries.length === 0 ? (
                   <div className="text-center py-12">
                     <Car className="h-14 w-14 mx-auto mb-3 text-grayBorder" />
-                    <p className="text-whitePure font-medium">No vehicles found</p>
+                    <p className="text-ink font-medium">No vehicles found</p>
                     <p className="text-sm text-textSecondary mt-1">Add a vehicle to start tracking expenses</p>
                   </div>
                 ) : (
@@ -151,7 +151,7 @@ export function ServiceExpensesModal({ isOpen, onClose }: ServiceExpensesModalPr
                       </div>
                       <div>
                         <p className="text-xs text-textSecondary uppercase tracking-wide">Total Maintenance Spent</p>
-                        <p className="text-2xl font-bold text-whitePure mt-0.5">{formatCurrencyPHP(grandTotal)}</p>
+                        <p className="text-2xl font-bold text-ink mt-0.5">{formatCurrencyPHP(grandTotal)}</p>
                       </div>
                     </div>
 
@@ -164,8 +164,8 @@ export function ServiceExpensesModal({ isOpen, onClose }: ServiceExpensesModalPr
                             onClick={() => setSelectedVehicleId(s.id)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                               selectedVehicleId === s.id
-                                ? 'bg-redPrimary text-whitePure'
-                                : 'bg-[#262626] text-textSecondary hover:text-whitePure'
+                                ? 'bg-redPrimary text-onAccent'
+                                : 'bg-surface text-textSecondary hover:text-ink'
                             }`}
                           >
                             {s.label}
@@ -179,17 +179,17 @@ export function ServiceExpensesModal({ isOpen, onClose }: ServiceExpensesModalPr
                       <div className="space-y-4">
                         {/* Stats row */}
                         <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-[#262626] rounded-xl p-4">
+                          <div className="bg-surface rounded-xl p-4">
                             <p className="text-xs text-textSecondary">Services</p>
-                            <p className="text-2xl font-bold text-whitePure mt-1">{selected.totalRecords}</p>
+                            <p className="text-2xl font-bold text-ink mt-1">{selected.totalRecords}</p>
                           </div>
-                          <div className="bg-[#262626] rounded-xl p-4">
+                          <div className="bg-surface rounded-xl p-4">
                             <p className="text-xs text-textSecondary">Total Cost</p>
-                            <p className="text-lg font-bold text-whitePure mt-1">{formatCurrencyPHP(selected.totalCost)}</p>
+                            <p className="text-lg font-bold text-ink mt-1">{formatCurrencyPHP(selected.totalCost)}</p>
                           </div>
-                          <div className="bg-[#262626] rounded-xl p-4">
+                          <div className="bg-surface rounded-xl p-4">
                             <p className="text-xs text-textSecondary">Last Service</p>
-                            <p className="text-sm font-bold text-whitePure mt-1">
+                            <p className="text-sm font-bold text-ink mt-1">
                               {selected.lastService
                                 ? new Date(selected.lastService).toLocaleDateString('en-PH', {
                                     month: 'short',
@@ -203,7 +203,7 @@ export function ServiceExpensesModal({ isOpen, onClose }: ServiceExpensesModalPr
 
                         {/* Recent services */}
                         <div>
-                          <h4 className="text-sm font-semibold text-whitePure mb-3">Recent Services</h4>
+                          <h4 className="text-sm font-semibold text-ink mb-3">Recent Services</h4>
                           {selected.recentServices.length === 0 ? (
                             <p className="text-sm text-textSecondary">No service records yet.</p>
                           ) : (
@@ -211,14 +211,14 @@ export function ServiceExpensesModal({ isOpen, onClose }: ServiceExpensesModalPr
                               {selected.recentServices.map((svc, i) => (
                                 <div
                                   key={i}
-                                  className="flex items-center justify-between p-3 bg-[#262626] rounded-lg"
+                                  className="flex items-center justify-between p-3 bg-surface rounded-lg"
                                 >
                                   <div className="flex items-center gap-3">
                                     <div className="p-1.5 rounded-lg bg-redPrimary/20">
                                       <Wrench className="h-4 w-4 text-redPrimary" />
                                     </div>
                                     <div>
-                                      <p className="text-sm font-medium text-whitePure">{svc.serviceType}</p>
+                                      <p className="text-sm font-medium text-ink">{svc.serviceType}</p>
                                       <p className="text-xs text-textSecondary">
                                         {new Date(svc.serviceDate).toLocaleDateString('en-PH', {
                                           month: 'short',
@@ -228,7 +228,7 @@ export function ServiceExpensesModal({ isOpen, onClose }: ServiceExpensesModalPr
                                       </p>
                                     </div>
                                   </div>
-                                  <span className="text-sm font-semibold text-whitePure">
+                                  <span className="text-sm font-semibold text-ink">
                                     {formatCurrencyPHP(svc.cost)}
                                   </span>
                                 </div>

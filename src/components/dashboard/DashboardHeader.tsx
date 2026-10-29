@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import { Menu } from 'lucide-react';
-import { NotificationDropdown } from './NotificationDropdown';
+import Link from "next/link";
+import { Menu, Wrench } from "lucide-react";
+import { NotificationDropdown } from "./NotificationDropdown";
 
 interface DashboardHeaderProps {
   sidebarOpen: boolean;
@@ -10,47 +11,24 @@ interface DashboardHeaderProps {
   userEmail?: string;
 }
 
-export function DashboardHeader({ 
-  sidebarOpen, 
-  setSidebarOpen,
-  userName,
-  userEmail 
-}: DashboardHeaderProps) {
+export function DashboardHeader({ sidebarOpen, setSidebarOpen, userName, userEmail }: DashboardHeaderProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-[#1D1D1C] border-b border-[#3A3A3A] z-50">
-      {/* Mobile adjustment: tighter horizontal spacing on phones */}
-      <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-3">
-        {/* Left side */}
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="autocare-button lg:hidden p-2 rounded-lg transition-all duration-200 ease-out"
-            aria-label="Toggle menu"
-          >
-            <Menu className="w-5 h-5 text-white" />
-          </button>
-          
-          <div className="flex items-center gap-0 min-w-0">
-            <span className="text-lg sm:text-xl font-semibold text-white truncate">AutoCare</span>
-            <span className="text-lg sm:text-xl font-semibold text-[#D32F2F]">+</span>
-          </div>
+    <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-line bg-surface">
+      <div className="flex h-full items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <button id="navigation-toggle" type="button" onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-lg p-3 text-ink hover:bg-surfaceHover lg:hidden" aria-label={sidebarOpen ? "Close navigation" : "Open navigation"} aria-expanded={sidebarOpen} aria-controls="application-navigation"><Menu className="h-5 w-5" /></button>
+          <Link href="/dashboard" className="flex items-center gap-2 rounded-lg text-ink" aria-label="AutoCare+ dashboard">
+            <span className="hidden rounded-lg bg-accent p-2 text-onAccent sm:block"><Wrench className="h-5 w-5" aria-hidden="true" /></span>
+            <span className="text-lg font-bold tracking-tight sm:text-xl">AutoCare<span className="text-accent">+</span></span>
+          </Link>
         </div>
-
-        {/* Right side */}
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <NotificationDropdown />
-          
-          <div className="hidden md:flex flex-col items-end">
-            <span className="text-sm text-white">{userName || 'User'}</span>
-            <span className="text-xs text-[#B0B0B0]">{userEmail || 'user@example.com'}</span>
+          <div className="hidden min-w-0 flex-col items-end border-l border-line pl-4 md:flex">
+            <span className="max-w-56 truncate text-sm font-semibold text-ink">{userName || "User"}</span>
+            {userEmail && <span className="max-w-56 truncate text-xs text-muted">{userEmail}</span>}
           </div>
-          
-          {/* Mobile adjustment: slightly smaller avatar on very small screens */}
-          <div className="h-9 w-9 sm:w-10 sm:h-10 rounded-full bg-[#D32F2F] flex items-center justify-center shrink-0">
-            <span className="text-white font-semibold">
-              {userName ? userName.charAt(0).toUpperCase() : 'U'}
-            </span>
-          </div>
+          <Link href="/profile" aria-label="Your profile" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent/15 bg-accentSoft font-semibold text-accent hover:bg-surfaceHover">{userName ? userName.charAt(0).toUpperCase() : "U"}</Link>
         </div>
       </div>
     </header>

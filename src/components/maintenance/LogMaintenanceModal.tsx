@@ -183,28 +183,28 @@ export function LogMaintenanceModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="relative bg-[#1D1D1C] border border-[#3A3A3A] rounded-2xl shadow-2xl w-full max-w-lg"
+              className="relative bg-canvas border border-line rounded-2xl shadow-2xl w-full max-w-lg"
               onClick={(e) => e.stopPropagation()}
             >
               {saving && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/45 backdrop-blur-sm">
+                <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-surface/95 backdrop-blur-sm">
                   <LoadingState mode="container" label={savingLabel} className="min-h-[200px] w-[min(92%,420px)]" />
                 </div>
               )}
-              <div className="flex items-center justify-between gap-3 p-4 sm:p-6 border-b border-[#3A3A3A]">
+              <div className="flex items-center justify-between gap-3 p-4 sm:p-6 border-b border-line">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-redPrimary">
-                    <Wrench className="h-5 w-5 text-whitePure" />
+                    <Wrench className="h-5 w-5 text-onAccent" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-whitePure">{title ?? 'Log Maintenance'}</h2>
+                    <h2 className="text-lg font-semibold text-ink">{title ?? 'Log Maintenance'}</h2>
                     <p className="text-xs text-textSecondary mt-0.5">Record a service for your vehicle</p>
                   </div>
                 </div>
                 <button
                   onClick={handleClose}
                   disabled={saving}
-                  className="p-2 hover:bg-[#262626] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 hover:bg-surfaceHover rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="h-5 w-5 text-textSecondary" />
                 </button>
@@ -231,7 +231,7 @@ export function LogMaintenanceModal({
                       <select
                         value={form.vehicleId}
                         onChange={(e) => handleVehicleChange(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-[#262626] border border-[#3A3A3A] rounded-lg text-whitePure text-sm focus:outline-none focus:border-redPrimary"
+                        className="w-full px-3 py-2.5 bg-surface border border-line rounded-lg text-ink text-sm focus:outline-none focus:border-redPrimary"
                       >
                         {vehicles.map((option) => (
                           <option key={option.id} value={option.id}>
@@ -248,7 +248,7 @@ export function LogMaintenanceModal({
                     <label className="block text-xs font-medium text-textSecondary uppercase tracking-wide mb-1.5">
                       Vehicle
                     </label>
-                    <div className="w-full px-3 py-2.5 bg-[#262626] border border-[#3A3A3A] rounded-lg text-whitePure text-sm">
+                    <div className="w-full px-3 py-2.5 bg-surface border border-line rounded-lg text-ink text-sm">
                       {vehicle.label}
                     </div>
                   </div>
@@ -261,7 +261,7 @@ export function LogMaintenanceModal({
                   <select
                     value={form.serviceCategory}
                     onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-[#262626] border border-[#3A3A3A] rounded-lg text-whitePure text-sm focus:outline-none focus:border-redPrimary"
+                    className="w-full px-3 py-2.5 bg-surface border border-line rounded-lg text-ink text-sm focus:outline-none focus:border-redPrimary"
                   >
                     <option value="">Select category...</option>
                     {serviceCategories.map((category) => (
@@ -281,7 +281,7 @@ export function LogMaintenanceModal({
                     value={form.serviceType}
                     onChange={(e) => setForm((prev) => ({ ...prev, serviceType: e.target.value }))}
                     placeholder="e.g. Oil Change, Tire Rotation"
-                    className="w-full px-3 py-2.5 bg-[#262626] border border-[#3A3A3A] rounded-lg text-whitePure text-sm placeholder-textSecondary focus:outline-none focus:border-redPrimary"
+                    className="w-full px-3 py-2.5 bg-surface border border-line rounded-lg text-ink text-sm placeholder-textSecondary focus:outline-none focus:border-redPrimary"
                   />
                 </div>
 
@@ -295,7 +295,7 @@ export function LogMaintenanceModal({
                       type="date"
                       value={form.serviceDate}
                       onChange={(e) => setForm((prev) => ({ ...prev, serviceDate: e.target.value }))}
-                      className="w-full px-3 py-2.5 bg-[#262626] border border-[#3A3A3A] rounded-lg text-whitePure text-sm focus:outline-none focus:border-redPrimary"
+                      className="w-full px-3 py-2.5 bg-surface border border-line rounded-lg text-ink text-sm focus:outline-none focus:border-redPrimary"
                     />
                   </div>
 
@@ -309,7 +309,7 @@ export function LogMaintenanceModal({
                       onChange={(e) => setForm((prev) => ({ ...prev, mileage: e.target.value }))}
                       placeholder="0"
                       min="0"
-                      className="w-full px-3 py-2.5 bg-[#262626] border border-[#3A3A3A] rounded-lg text-whitePure text-sm placeholder-textSecondary focus:outline-none focus:border-redPrimary"
+                      className="w-full px-3 py-2.5 bg-surface border border-line rounded-lg text-ink text-sm placeholder-textSecondary focus:outline-none focus:border-redPrimary"
                     />
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export function LogMaintenanceModal({
                     placeholder="0.00"
                     min="0"
                     step="0.01"
-                    className="w-full px-3 py-2.5 bg-[#262626] border border-[#3A3A3A] rounded-lg text-whitePure text-sm placeholder-textSecondary focus:outline-none focus:border-redPrimary"
+                    className="w-full px-3 py-2.5 bg-surface border border-line rounded-lg text-ink text-sm placeholder-textSecondary focus:outline-none focus:border-redPrimary"
                   />
                 </div>
 
@@ -338,7 +338,7 @@ export function LogMaintenanceModal({
                     onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
                     placeholder="Any additional notes..."
                     rows={2}
-                    className="w-full px-3 py-2.5 bg-[#262626] border border-[#3A3A3A] rounded-lg text-whitePure text-sm placeholder-textSecondary focus:outline-none focus:border-redPrimary resize-none"
+                    className="w-full px-3 py-2.5 bg-surface border border-line rounded-lg text-ink text-sm placeholder-textSecondary focus:outline-none focus:border-redPrimary resize-none"
                   />
                 </div>
                 <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
@@ -346,14 +346,14 @@ export function LogMaintenanceModal({
                     type="button"
                     onClick={handleClose}
                     disabled={saving}
-                    className="flex-1 px-4 py-2.5 bg-[#262626] hover:bg-[#303030] text-whitePure text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2.5 bg-surface hover:bg-surfaceHover text-ink text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={saving || vehicles.length === 0}
-                    className="flex-1 px-4 py-2.5 bg-redPrimary hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-whitePure text-sm font-medium rounded-lg transition-colors"
+                    className="flex-1 px-4 py-2.5 bg-redPrimary hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-onAccent text-sm font-medium rounded-lg transition-colors"
                   >
                     {saving ? savingLabel : 'Log Maintenance'}
                   </button>
