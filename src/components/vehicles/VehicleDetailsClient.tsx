@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button, Card } from '@/components/ui';
 import { VehicleImage } from './VehicleImage';
+import { ReminderSchedule } from '@/components/reminders/ReminderSchedule';
 import { AddReminderModal } from '@/components/reminders/AddReminderModal';
 import { LogMaintenanceModal } from '@/components/maintenance/LogMaintenanceModal';
 import { formatCurrencyPHP } from '@/lib/currency';
@@ -63,14 +64,14 @@ export function VehicleDetailsClient({ vehicle, stats, maintenanceError, upcomin
           {remindersError ? <div className="mt-4 space-y-3"><p role="alert" className="text-muted">Reminders could not be loaded.</p>{retry}</div> : upcomingReminders.length ? <ul className="mt-4 space-y-3">{upcomingReminders.slice(0, 5).map(reminder => <li key={reminder.id} className="rounded-lg border border-line bg-canvas p-4">
             <h3 className="break-words font-semibold text-ink">{reminder.title || reminder.reminderType || 'Maintenance reminder'}</h3>
             <p className="mt-1 text-sm text-muted">Priority: {classificationLabel(reminder.priority)} · Recorded status: {classificationLabel(reminder.status)}</p>
-            <p className="mt-2 text-sm text-ink">Due date: {calendarDate(reminder.dueDate)}</p><p className="mt-1 text-sm text-ink">Due mileage: {reminder.dueMileage != null ? formatRecordedMileage(reminder.dueMileage) : 'Not recorded'}</p>
+            <ReminderSchedule reminder={reminder} mileage={vehicle.current_mileage} /><p className="mt-2 text-sm text-ink">Due date: {calendarDate(reminder.dueDate)}</p><p className="mt-1 text-sm text-ink">Due mileage: {reminder.dueMileage != null ? formatRecordedMileage(reminder.dueMileage) : 'Not recorded'}</p>
           </li>)}</ul> : <p className="mt-4 text-sm text-muted">No open reminders for this vehicle.</p>}
           {!remindersError && upcomingReminders.length > 5 && <p className="mt-3 text-sm text-muted">Showing 5 of {upcomingReminders.length} open reminders.</p>}
           <Button variant="secondary" href="/reminders" className="mt-5">View All Reminders</Button>
         </Card>
       </div>
     </main>
-    <AddReminderModal isOpen={addingReminder} onClose={() => setAddingReminder(false)} vehicleId={vehicle.id} vehicleName={identity} />
+    <AddReminderModal isOpen={addingReminder} onClose={() => setAddingReminder(false)} onSuccess={() => setFeedback('Reminder created.')} vehicleId={vehicle.id} vehicleName={identity} />
     <LogMaintenanceModal isOpen={logging} onClose={() => setLogging(false)} vehicle={{ id: vehicle.id, label: identity, currentMileage: vehicle.current_mileage }} onSuccess={() => { setLogging(false); setFeedback('Maintenance record saved.'); router.refresh(); }} />
   </>;
 }

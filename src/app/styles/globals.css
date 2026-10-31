@@ -277,3 +277,9 @@ textarea,
     grid-template-columns: minmax(0, 1.8fr) minmax(18rem, 1fr);
   }
 }
+
+/* UI-005: use content width after the sidebar for maintenance layouts. */
+.maintenance-summary-grid, .maintenance-record-grid, .maintenance-toolbar-grid, .maintenance-form-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.maintenance-form-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+@container workspace (min-width: 38rem) { .maintenance-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .maintenance-toolbar-grid, .maintenance-record-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container workspace (min-width: 70rem) { .maintenance-toolbar-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .maintenance-record-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

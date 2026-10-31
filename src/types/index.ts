@@ -8,7 +8,7 @@
 // Enums and Type Unions
 export type VehicleType = 'sedan' | 'hatchback' | 'suv' | 'pickup' | 'van' | 'hybrid' | 'ev';
 export type Powertrain = 'gasoline' | 'diesel' | 'hybrid' | 'electric';
-export type MaintenancePriority = 'high' | 'medium' | 'low';
+export type MaintenancePriority = 'critical' | 'high' | 'medium' | 'low';
 export type VehicleAgeGroup = 'new' | 'mid-life' | 'aging'; // 0-3, 4-7, 8+ years
 
 export interface Vehicle {
@@ -48,6 +48,7 @@ export interface Reminder {
   userId: string; // Maps to user_id in database
   vehicleId: string;
   vehicleName?: string;
+  currentMileage?: number | null;
   title?: string; // Existing field in database
   reminderType: string;
   serviceCategory: string;

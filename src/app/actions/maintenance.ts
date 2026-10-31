@@ -3,6 +3,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MaintenanceRecord } from "@/types";
 import { calculateNextDue, getMaintenanceCategoryById } from "@/lib/maintenance";
+import { readComplete } from '@/lib/maintenance/read-complete';
+import { validateService } from '@/lib/maintenance/forms';
 import { revalidatePath } from "next/cache";
 
 /**
@@ -47,17 +49,10 @@ export async function getMaintenanceRecords(
       return { data: null, error: "Unauthorized" };
     }
 
-    const { data, error } = await supabase
-      .from("maintenance_logs")
-      .select("*")
-      .eq("vehicle_id", vehicleId)
-      .eq("user_id", user.id)
-      .order("service_date", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching maintenance records:", error);
-      return { data: null, error: error.message };
-    }
+    const data = await readComplete<any>((from, to) => supabase
+      .from('maintenance_logs').select('*', { count: 'exact' })
+      .eq('vehicle_id', vehicleId).eq('user_id', user.id)
+      .order('service_date', { ascending: false }).order('id').range(from, to));
 
     // Transform database records to match TypeScript interface
     const records: MaintenanceRecord[] = data.map((record) => ({
@@ -190,6 +185,11 @@ export async function createMaintenanceRecord(
     if (!user) {
       return { data: null, error: "Unauthorized" };
     }
+
+    const validation = validateService({ ...input, mileage: String(input.mileage), cost: String(input.cost), notes: input.notes ?? '' });
+    if (Object.keys(validation).length) return { data: null, error: Object.values(validation)[0] ?? 'Invalid service.' };
+    const ownership = await supabase.from('vehicles').select('id').eq('id', input.vehicleId).eq('user_id', user.id).single();
+    if (ownership.error || !ownership.data) return { data: null, error: 'Vehicle is unavailable for this account.' };
 
     // Get the maintenance category to calculate next due dates
     const category = getMaintenanceCategoryById(input.serviceCategory);
@@ -326,6 +326,9 @@ export async function updateMaintenanceRecord(
       return { data: null, error: "Unauthorized" };
     }
 
+    const validation = validateService({ ...input, mileage: String(input.mileage), cost: String(input.cost), notes: input.notes ?? '' });
+    if (Object.keys(validation).length) return { data: null, error: Object.values(validation)[0] ?? 'Invalid service.' };
+
     // Recalculate next due dates
     const category = getMaintenanceCategoryById(input.serviceCategory);
     let nextDueDate: string | undefined;
@@ -364,6 +367,7 @@ export async function updateMaintenanceRecord(
         updated_at: new Date().toISOString(),
       })
       .eq("id", input.id)
+      .eq("vehicle_id", input.vehicleId)
       .eq("user_id", user.id)
       .select()
       .single();

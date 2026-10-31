@@ -5,16 +5,9 @@ const path = require('node:path');
 const Module = require('node:module');
 const ts = require('typescript');
 
-// Use the installed TypeScript compiler and Node's built-in runner; no test dependency.
-const filename = path.resolve(__dirname, '../src/services/dashboardService.ts');
-const compiled = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-}).outputText;
-const loaded = new Module(filename, module);
-loaded.filename = filename;
-loaded.paths = module.paths;
-loaded._compile(compiled, filename);
-const { loadDashboard, loadServiceExpenses, monthWindow, relevantReminders, withDeadline, DashboardSessionError } = loaded.exports;
+const { load } = require('./vehicle-test-helpers.cjs');
+const loaded = { exports: load('src/services/dashboardService.ts') };
+const { loadDashboard, loadServiceExpenses, monthWindow, relevantReminders, withDeadline, DashboardSessionError } = load('src/services/dashboardService.ts');
 const now = new Date(2026, 9, 29, 12);
 const signal = () => new AbortController().signal;
 const vehicle = (id = 'car-1') => ({ id, make: 'Test', model: 'Vehicle', year: 2024, plate_number: 'TEST', current_mileage: 12000, created_at: '2026-10-01T12:00:00Z' });
@@ -161,17 +154,7 @@ test('hung requests time out and signal cancellation; unmount cancellation also 
 const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
 function dashboardComponent(name) {
-  const file = path.resolve(__dirname, `../src/components/dashboard/${name}.tsx`);
-  const code = ts.transpileModule(fs.readFileSync(file, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
-  }).outputText;
-  const componentModule = new Module(file, module);
-  componentModule.filename = file;
-  componentModule.paths = module.paths;
-  const originalRequire = componentModule.require.bind(componentModule);
-  componentModule.require = request => request === '../../services/dashboardService' ? loaded.exports : originalRequire(request);
-  componentModule._compile(code, file);
-  return componentModule.exports[name];
+  return load('src/components/dashboard/' + name + '.tsx')[name];
 }
 
 function renderComponent(name, props) {
@@ -206,7 +189,7 @@ test('reminder markup communicates overdue status and mileage in text and links 
   assert.match(html, /No due date set/);
   assert.match(html, /href="\/reminders"/);
   const empty = renderComponent('UpcomingReminders', { reminders: [] });
-  assert.match(empty, /Nothing due in the next 30 days/);
+  assert.match(empty, /No reminders in this preview/);
   assert.doesNotMatch(empty, /health score|100%|perfect condition/i);
 });
 
