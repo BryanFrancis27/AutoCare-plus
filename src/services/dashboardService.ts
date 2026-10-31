@@ -1,3 +1,4 @@
+import { reminderPresentation, type Schedule } from '../lib/maintenance/presentation';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export interface GarageVehicle {
@@ -11,7 +12,7 @@ export interface GarageVehicle {
   image_url?: string | null;
 }
 
-type VehicleJoin = Pick<GarageVehicle, 'make' | 'model' | 'year'>;
+type VehicleJoin = Pick<GarageVehicle, 'make' | 'model' | 'year'> & { current_mileage?: number | null };
 export interface MaintenanceRow {
   id: string;
   vehicle_id: string;
@@ -46,6 +47,9 @@ export interface DashboardReminder {
   dueDate: string | null;
   dueMileage: number | null;
   overdue: boolean;
+  schedule?: Schedule;
+  scheduleLabel?: string;
+  remaining?: number | null;
   priority: string | null;
 }
 export interface DashboardData {
@@ -107,12 +111,15 @@ export function relevantReminders(rows: ReminderRow[], now: Date): DashboardRemi
   const today = dateKey(now);
   const horizon = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30);
   const priority: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
-  return rows.map(row => ({
+  return rows.filter(row => row.status !== 'completed').map(row => {
+    const vehicle = Array.isArray(row.vehicles) ? row.vehicles[0] : row.vehicles;
+    const state = reminderPresentation({ dueDate: row.due_date ?? undefined, dueMileage: row.due_mileage ?? undefined, priority: row.priority as import('../types').MaintenancePriority, status: row.status as import('../types').Reminder['status'], isCompleted: false }, vehicle?.current_mileage, today);
+    return ({
     id: row.id, title: row.title || row.reminder_type || 'Maintenance reminder',
     vehicleName: vehicleLabel(row.vehicles), dueDate: row.due_date,
     dueMileage: row.due_mileage, priority: row.priority,
-    overdue: row.status === 'overdue' || Boolean(row.due_date && row.due_date < today),
-  })).filter(row => row.overdue || !row.dueDate || row.dueDate <= dateKey(horizon))
+    overdue: state.overdue, schedule: state.schedule, scheduleLabel: state.label, remaining: state.remaining,
+  }); }).filter(row => row.overdue || row.schedule === 'due-soon' || !row.dueDate || row.dueDate <= dateKey(horizon))
     .sort((a, b) => Number(b.overdue) - Number(a.overdue) || (a.dueDate || '9999').localeCompare(b.dueDate || '9999') || (priority[a.priority || ''] ?? 4) - (priority[b.priority || ''] ?? 4) || a.id.localeCompare(b.id))
     .slice(0, 5);
 }
@@ -153,7 +160,7 @@ export async function loadDashboard(client: SupabaseClient, signal: AbortSignal,
     client.from('vehicles').select('*', { count: 'exact' }).eq('user_id', user.id).order('created_at', { ascending: false }).order('id').limit(5).abortSignal(signal),
     client.from('maintenance_logs').select('id, vehicle_id, service_type, service_date, cost, vehicles(make, model, year)', { count: 'exact' }).eq('user_id', user.id).order('service_date', { ascending: false }).order('id').limit(5).abortSignal(signal),
     readAll<{ cost: number | string | null }>((from, to) => client.from('maintenance_logs').select('id, cost').eq('user_id', user.id).gte('service_date', window.start).lt('service_date', window.end).order('id').range(from, to).abortSignal(signal), 'monthly expenses', signal),
-    readAll<ReminderRow>((from, to) => client.from('reminders').select('id, title, reminder_type, due_date, due_mileage, status, priority, vehicle_id, vehicles(make, model, year)').eq('user_id', user.id).eq('is_completed', false).order('id').range(from, to).abortSignal(signal), 'reminders', signal),
+    readAll<ReminderRow>((from, to) => client.from('reminders').select('id, title, reminder_type, due_date, due_mileage, status, priority, vehicle_id, vehicles(make, model, year, current_mileage)').eq('user_id', user.id).eq('is_completed', false).order('id').range(from, to).abortSignal(signal), 'reminders', signal),
   ]);
   const vehicles = requireRows<GarageVehicle & { photo_url?: string | null; image?: string | null }>(garageResult, 'vehicles')
     .map(vehicle => ({ ...vehicle, image_url: vehicle.image_url ?? vehicle.photo_url ?? vehicle.image ?? null }));

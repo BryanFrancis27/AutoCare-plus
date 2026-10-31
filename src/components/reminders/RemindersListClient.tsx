@@ -1,709 +1,100 @@
-"use client";
-
-import Image from "next/image";
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Bell, Calendar, Car, ChevronRight, GaugeCircle } from "lucide-react";
-import { Button, Card, Dialog, LoadingState } from "@/components/ui";
-import { PageHeader } from "@/components/layout";
-import { completeReminderWithServiceLog, getReminderModalData, type ReminderModalData } from "@/app/actions/reminders";
-import { calculateDaysUntilDue, formatDueDate, formatMileage, getPriorityColor } from "@/lib/maintenance";
-import type { Reminder } from "@/types";
-
-type VehicleListItem = {
-  id: string;
-  make: string;
-  model: string;
-  year: number | null;
-  plate_number: string | null;
-  current_mileage: number | null;
-  image_url?: string | null;
-};
-
-type RemindersListClientProps = {
-  initialReminders: Reminder[];
-  initialVehicles: VehicleListItem[];
-  initialError: string | null;
-};
-
-type ReminderStatus = "overdue" | "upcoming" | "completed";
-
-type VehicleReminderSummary = VehicleListItem & {
-  displayName: string;
-  reminders: Reminder[];
-  overdue: Reminder[];
-  upcoming: Reminder[];
-  completed: Reminder[];
-};
-
-type ReminderCardProps = {
-  reminder: Reminder;
-  borderClassName: string;
-  dueContent?: string;
-  onView?: (reminderId: string) => void;
-  completed?: boolean;
-};
-
-type VehicleCatalogCardProps = {
-  vehicle: VehicleReminderSummary;
-  onOpen: (vehicleId: string) => void;
-};
-
-type ReminderSectionProps = {
-  title: string;
-  reminders: Reminder[];
-  status: ReminderStatus;
-  onView: (reminderId: string) => void;
-  emptyMessage: string;
-};
-
-type ReminderDetailsDialogProps = {
-  activeReminderId: string | null;
-  modalData: ReminderModalData | null;
-  isModalLoading: boolean;
-  modalError: string | null;
-  isCompleting: boolean;
-  onClose: () => void;
-  onMarkDone: () => void;
-};
-
-function getVehicleDisplayName(vehicle: VehicleListItem): string {
-  return [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(" ").trim();
-}
-
-function getReminderStatus(reminder: Reminder): ReminderStatus {
-  if (reminder.isCompleted || reminder.status === "completed") {
-    return "completed";
-  }
-
-  if (reminder.status === "overdue") {
-    return "overdue";
-  }
-
-  if (reminder.dueDate) {
-    const dueDate = new Date(reminder.dueDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (!Number.isNaN(dueDate.getTime()) && dueDate < today) {
-      return "overdue";
-    }
-  }
-
-  return "upcoming";
-}
-
-function getReminderVehicleLabel(reminder: Reminder): string {
-  return reminder.vehicleName || "Vehicle unavailable";
-}
-
-function VehicleCatalogCard({ vehicle, onOpen }: VehicleCatalogCardProps) {
-  return (
-    <button
-      type="button"
-      onClick={() => onOpen(vehicle.id)}
-      className="card group w-full overflow-hidden text-left transition-all duration-200 hover:-translate-y-1 hover:border-redPrimary/60 hover:shadow-[0_0_24px_rgba(211,47,47,0.14)] focus:outline-none focus:ring-2 focus:ring-redPrimary/70"
-    >
-      <div className="relative h-44 w-full border-b border-grayBorder bg-darkBg">
-        {vehicle.image_url ? (
-          <Image
-            src={vehicle.image_url}
-            alt={vehicle.displayName}
-            fill
-            unoptimized
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(211,47,47,0.18),transparent_62%)]">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-grayBorder bg-containerBg text-redPrimary">
-              <Car className="h-8 w-8" />
-            </div>
-          </div>
-        )}
-        <div className="absolute left-4 top-4 inline-flex rounded-full border border-redPrimary/30 bg-surface px-3 py-1 text-xs font-semibold tracking-[0.14em] text-redPrimary backdrop-blur-sm">
-          {vehicle.reminders.length} {vehicle.reminders.length === 1 ? "REMINDER" : "REMINDERS"}
-        </div>
-      </div>
-
-      <div className="space-y-4 p-4 sm:p-5">
-        <div className="space-y-1">
-          <h3 className="text-lg sm:text-xl font-semibold text-ink break-words">{vehicle.displayName}</h3>
-          <p className="text-sm text-textSecondary">Model: {vehicle.model}</p>
-          <p className="text-sm text-textSecondary">
-            {vehicle.plate_number || "Plate number not added"}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-grayBorder bg-darkBg px-3 py-3">
-            <p className="text-xs uppercase tracking-[0.12em] text-textSecondary">Overdue</p>
-            <p className="mt-2 text-2xl font-semibold text-redPrimary">{vehicle.overdue.length}</p>
-          </div>
-          <div className="rounded-xl border border-grayBorder bg-darkBg px-3 py-3">
-            <p className="text-xs uppercase tracking-[0.12em] text-textSecondary">Upcoming</p>
-            <p className="mt-2 text-2xl font-semibold text-blue-600">{vehicle.upcoming.length}</p>
-          </div>
-          <div className="rounded-xl border border-grayBorder bg-darkBg px-3 py-3">
-            <p className="text-xs uppercase tracking-[0.12em] text-textSecondary">Completed</p>
-            <p className="mt-2 text-2xl font-semibold text-green-600">{vehicle.completed.length}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between rounded-xl border border-grayBorder bg-darkBg px-4 py-3 text-sm text-textSecondary">
-          <span>
-            {vehicle.current_mileage != null ? formatMileage(vehicle.current_mileage) : "Mileage not set"}
-          </span>
-          <span className="inline-flex items-center gap-2 font-medium text-ink">
-            View reminders
-            <ChevronRight className="h-4 w-4 text-redPrimary transition-transform duration-200 group-hover:translate-x-1" />
-          </span>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function ReminderCardItem({
-  reminder,
-  borderClassName,
-  dueContent,
-  onView,
-  completed = false,
-}: ReminderCardProps) {
-  return (
-    <Card className={`p-4 ${borderClassName} ${completed ? "opacity-75" : ""}`}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className={`font-semibold text-textPrimary ${completed ? "line-through" : ""}`}>
-              {reminder.title || reminder.reminderType}
-            </h3>
-            {completed ? (
-              <span className="rounded-full border border-grayBorder bg-darkBg px-2.5 py-1 text-xs font-medium text-textSecondary">
-                COMPLETED
-              </span>
-            ) : (
-              <span className={`px-2 py-0.5 text-xs font-medium rounded ${getPriorityColor(reminder.priority)}`}>
-                {reminder.priority.toUpperCase()}
-              </span>
-            )}
-          </div>
-
-          <div className="mt-2">
-            <span className="inline-flex rounded-full border border-grayBorder bg-darkBg px-2.5 py-1 text-xs font-medium text-textSecondary">
-              Vehicle: {getReminderVehicleLabel(reminder)}
-            </span>
-          </div>
-
-          <p className="mt-2 text-sm text-textSecondary">{reminder.description}</p>
-
-          {(dueContent || reminder.dueMileage) && (
-            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-textSecondary">
-              {dueContent && <span>{dueContent}</span>}
-              {reminder.dueMileage && <span>Due at: {formatMileage(reminder.dueMileage)}</span>}
-            </div>
-          )}
-        </div>
-
-        {onView && !completed && (
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => onView(reminder.id)}>
-              View
-            </Button>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-}
-
-function ReminderSection({ title, reminders, status, onView, emptyMessage }: ReminderSectionProps) {
-  const isCompleted = status === "completed";
-  const borderClassName = status === "overdue" ? "border-l-4 border-redPrimary" : "border-l-4 border-grayBorder";
-
-  return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-textPrimary">{title}</h3>
-        <span className="rounded-full border border-grayBorder bg-darkBg px-3 py-1 text-xs font-medium tracking-[0.12em] text-textSecondary">
-          {reminders.length}
-        </span>
-      </div>
-
-      {reminders.length > 0 ? (
-        <div className="space-y-3">
-          {reminders.map((reminder) => {
-            const daysUntil = reminder.dueDate ? calculateDaysUntilDue(reminder.dueDate) : null;
-            const dueContent = reminder.dueDate
-              ? status === "overdue"
-                ? `Due: ${formatDueDate(reminder.dueDate)} (${Math.abs(daysUntil ?? 0)} days overdue)`
-                : `Due: ${formatDueDate(reminder.dueDate)}${daysUntil !== null ? ` (in ${daysUntil} days)` : ""}`
-              : undefined;
-
-            return (
-              <ReminderCardItem
-                key={reminder.id}
-                reminder={reminder}
-                borderClassName={borderClassName}
-                dueContent={dueContent}
-                onView={isCompleted ? undefined : onView}
-                completed={isCompleted}
-              />
-            );
-          })}
-        </div>
-      ) : (
-        <Card className="border-dashed p-4 text-sm text-textSecondary">{emptyMessage}</Card>
-      )}
-    </section>
-  );
-}
-
-function ReminderDetailsDialog({
-  activeReminderId,
-  modalData,
-  isModalLoading,
-  modalError,
-  isCompleting,
-  onClose,
-  onMarkDone,
-}: ReminderDetailsDialogProps) {
-  return (
-    <Dialog
-      isOpen={Boolean(activeReminderId)}
-      onClose={onClose}
-      title={modalData?.reminder.title || modalData?.reminder.reminderType || "Reminder Details"}
-      size="full"
-    >
-      <div className="flex h-full min-h-0 flex-col gap-4">
-        {isModalLoading && (
-          <LoadingState mode="container" label="Loading reminder details..." className="min-h-[240px]" />
-        )}
-
-        {modalError && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-accent">
-            {modalError}
-          </div>
-        )}
-
-        {modalData && !isModalLoading && (
-          <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-            <div className="grid min-h-0 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-              <div className="min-h-[280px] overflow-hidden rounded-xl border border-grayBorder bg-darkBg">
-              {modalData.vehicle?.imageUrl ? (
-                <div className="relative h-full min-h-[280px] w-full">
-                  <Image
-                    src={modalData.vehicle.imageUrl}
-                    alt={modalData.vehicle.displayName}
-                    fill
-                    unoptimized
-                    className="object-contain p-6"
-                  />
-                </div>
-              ) : (
-                <div className="flex h-full min-h-[280px] items-center justify-center bg-darkBg p-6">
-                  <div className="flex h-full max-h-[420px] w-full items-center justify-center rounded-xl border border-dashed border-grayBorder bg-containerBg/60">
-                    <div className="flex flex-col items-center gap-3 text-center">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-redPrimary/15 text-redPrimary">
-                        <Car className="h-10 w-10" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold text-ink">No vehicle image available</p>
-                        <p className="text-sm text-textSecondary">A placeholder is shown until a vehicle photo is added.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              </div>
-
-              <div className="grid min-h-0 gap-4">
-                <div className="rounded-xl border border-grayBorder bg-darkBg p-5">
-                <div className="mb-4 flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-redPrimary" />
-                  <h3 className="text-base font-semibold text-ink">Maintenance Information</h3>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-lg border border-grayBorder bg-containerBg p-4 sm:col-span-2">
-                    <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Maintenance type</p>
-                    <p className="mt-2 text-base font-medium text-ink">{modalData.reminder.reminderType}</p>
-                  </div>
-                  <div className="rounded-lg border border-grayBorder bg-containerBg p-4 sm:col-span-2">
-                    <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Scheduled date</p>
-                    <p className="mt-2 text-base font-medium text-ink">
-                      {modalData.reminder.dueDate ? formatDueDate(modalData.reminder.dueDate) : "Not scheduled"}
-                    </p>
-                  </div>
-                  <div className="rounded-lg border border-grayBorder bg-containerBg p-4 sm:col-span-2">
-                    <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Description</p>
-                    <p className="mt-2 text-sm leading-6 text-textSecondary">
-                      {modalData.reminder.description || "No description available for this reminder."}
-                    </p>
-                  </div>
-                </div>
-                </div>
-
-                <div className="rounded-xl border border-grayBorder bg-darkBg p-5">
-                <div className="mb-4 flex items-center gap-2">
-                  <GaugeCircle className="h-4 w-4 text-redPrimary" />
-                  <h3 className="text-base font-semibold text-ink">Vehicle Information</h3>
-                </div>
-
-                {modalData.vehicle ? (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-lg border border-grayBorder bg-containerBg p-4 sm:col-span-2">
-                      <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Vehicle name</p>
-                      <p className="mt-2 text-base font-medium text-ink">{modalData.vehicle.displayName}</p>
-                    </div>
-                    <div className="rounded-lg border border-grayBorder bg-containerBg p-4 sm:col-span-2">
-                      <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Vehicle model</p>
-                      <p className="mt-2 text-base font-medium text-ink">
-                        {modalData.vehicle.make} {modalData.vehicle.model}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-grayBorder bg-containerBg p-4">
-                      <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Mileage</p>
-                      <p className="mt-2 text-base font-medium text-ink">
-                        {modalData.vehicle.currentMileage != null ? formatMileage(modalData.vehicle.currentMileage) : "Not set"}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-grayBorder bg-containerBg p-4">
-                      <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Last service date</p>
-                      <p className="mt-2 text-base font-medium text-ink">
-                        {modalData.vehicle.lastServiceDate ? formatDueDate(modalData.vehicle.lastServiceDate) : "No service records"}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-lg border border-grayBorder bg-containerBg p-4">
-                    <p className="text-sm text-textSecondary">Vehicle information is not available for this reminder.</p>
-                  </div>
-                )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mobile adjustment: stack dialog actions for better tap ergonomics */}
-        <div className="shrink-0 flex flex-col-reverse sm:flex-row justify-stretch sm:justify-end gap-2 border-t border-grayBorder pt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full sm:w-auto rounded-lg px-4 py-2 text-ink transition-colors hover:bg-surfaceHover"
-          >
-            Close
-          </button>
-          {modalData && !modalData.reminder.isCompleted && (
-            <button
-              type="button"
-              onClick={onMarkDone}
-              disabled={isCompleting}
-              className="w-full sm:w-auto rounded-lg bg-accent px-4 py-2 text-onAccent transition-colors hover:bg-accentHover disabled:opacity-50"
-            >
-              {isCompleting ? "Updating..." : "Mark as DONE"}
-            </button>
-          )}
-        </div>
-      </div>
-    </Dialog>
-  );
-}
-
-export function RemindersListClient({ initialReminders, initialVehicles, initialError }: RemindersListClientProps) {
+'use client';
+import { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button, Dialog, LoadingState } from '@/components/ui';
+import { PageHeader } from '@/components/layout';
+import { VehicleImage } from '@/components/vehicles/VehicleImage';
+import { getReminderModalData, completeReminderWithServiceLog, type ReminderModalData } from '@/app/actions/reminders';
+import { reminderPresentation } from '@/lib/maintenance/presentation';
+import { calendarDate } from '@/lib/vehicles/vehicle-model';
+import { formatRecordedMileage } from '@/lib/vehicles/garage-model';
+import { maintenanceControl } from '@/components/maintenance/MaintenanceField';
+import { ReminderSchedule } from './ReminderSchedule';
+import { AddReminderModal } from './AddReminderModal';
+import type { Reminder } from '@/types';
+type Vehicle = { id: string; make: string; model: string; year: number | null; plate_number: string | null; current_mileage: number | null };
+export function RemindersListClient({ initialReminders, initialVehicles, initialError, created = false }: { initialReminders: Reminder[]; initialVehicles: Vehicle[]; initialError: string | null; created?: boolean }) {
   const router = useRouter();
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
-  const [activeReminderId, setActiveReminderId] = useState<string | null>(null);
-  const [modalData, setModalData] = useState<ReminderModalData | null>(null);
-  const [isModalLoading, setIsModalLoading] = useState(false);
-  const [modalError, setModalError] = useState<string | null>(null);
-  const [isCompleting, setIsCompleting] = useState(false);
-
-  const reminderCounts = useMemo(() => {
-    return initialReminders.reduce(
-      (counts, reminder) => {
-        const status = getReminderStatus(reminder);
-        counts[status] += 1;
-        return counts;
-      },
-      { overdue: 0, upcoming: 0, completed: 0 }
-    );
-  }, [initialReminders]);
-
-  const vehicleSummaries = useMemo<VehicleReminderSummary[]>(() => {
-    const remindersByVehicle = initialReminders.reduce<Record<string, Reminder[]>>((accumulator, reminder) => {
-      if (!accumulator[reminder.vehicleId]) {
-        accumulator[reminder.vehicleId] = [];
-      }
-
-      accumulator[reminder.vehicleId].push(reminder);
-      return accumulator;
-    }, {});
-
-    return initialVehicles.map((vehicle) => {
-      const reminders = remindersByVehicle[vehicle.id] ?? [];
-      const overdue: Reminder[] = [];
-      const upcoming: Reminder[] = [];
-      const completed: Reminder[] = [];
-
-      reminders.forEach((reminder) => {
-        const status = getReminderStatus(reminder);
-
-        if (status === "completed") {
-          completed.push(reminder);
-          return;
-        }
-
-        if (status === "overdue") {
-          overdue.push(reminder);
-          return;
-        }
-
-        upcoming.push(reminder);
-      });
-
-      return {
-        ...vehicle,
-        displayName: getVehicleDisplayName(vehicle),
-        reminders,
-        overdue,
-        upcoming,
-        completed,
-      };
-    });
-  }, [initialReminders, initialVehicles]);
-
-  const selectedVehicle = useMemo(
-    () => vehicleSummaries.find((vehicle) => vehicle.id === selectedVehicleId) ?? null,
-    [selectedVehicleId, vehicleSummaries]
-  );
-
-  const openReminderModal = async (reminderId: string) => {
-    setActiveReminderId(reminderId);
-    setModalData(null);
-    setModalError(null);
-    setIsModalLoading(true);
-
-    const result = await getReminderModalData(reminderId);
-    setIsModalLoading(false);
-
-    if (result.error) {
-      setModalError(result.error);
-      return;
-    }
-
-    setModalData(result.data);
-  };
-
-  const closeReminderModal = () => {
-    setActiveReminderId(null);
-    setModalData(null);
-    setModalError(null);
-  };
-
-  const closeVehicleModal = () => {
-    setSelectedVehicleId(null);
-    closeReminderModal();
-  };
-
-  const handleMarkDone = async () => {
-    if (!activeReminderId) return;
-
-    setIsCompleting(true);
-    setModalError(null);
-
-    const result = await completeReminderWithServiceLog(activeReminderId);
-    setIsCompleting(false);
-
-    if (result.error) {
-      setModalError(result.error);
-      return;
-    }
-
-    closeReminderModal();
-    router.refresh();
-  };
-
-  if (initialError) {
-    return (
-      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-4">
-        <PageHeader title="Reminders" description="Review reminders by vehicle." />
-        <Card className="p-6">
-          <p className="text-red-600">Error loading reminders: {initialError}</p>
-        </Card>
-      </main>
-    );
+  const [vehicleId, setVehicleId] = useState('');
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('active');
+  const [sort, setSort] = useState('schedule');
+  const [adding, setAdding] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [details, setDetails] = useState<ReminderModalData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [feedback, setFeedback] = useState(created ? 'Reminder created.' : '');
+  const request = useRef(0), busy = useRef(false);
+  const vehicleName = (vehicle: Vehicle) => [vehicle.year, vehicle.make, vehicle.model, vehicle.plate_number].filter(Boolean).join(' ');
+  const mileage = (reminder: Reminder) => reminder.currentMileage ?? initialVehicles.find(v => v.id === reminder.vehicleId)?.current_mileage;
+  const state = (reminder: Reminder) => reminderPresentation(reminder, mileage(reminder));
+  const scoped = initialReminders.filter(r => !vehicleId || r.vehicleId === vehicleId);
+  const completed = scoped.filter(r => state(r).schedule === 'completed').length;
+  const overdue = scoped.filter(r => state(r).overdue).length;
+  const rank = { overdue: 0, 'mileage-reached': 1, 'due-soon': 2, scheduled: 3, unknown: 4, completed: 5 };
+  const priorities: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3, unknown: 4 };
+  const rows = scoped.filter(r => {
+    const schedule = state(r).schedule;
+    return (status === 'all' || (status === 'active' ? schedule !== 'completed' : status === 'overdue' ? state(r).overdue : status === schedule)) && [r.title, r.reminderType, r.serviceCategory, r.description, r.vehicleName, initialVehicles.find(v => v.id === r.vehicleId)?.plate_number].join(' ').toLowerCase().includes(search.trim().toLowerCase());
+  }).sort((a, b) => (sort === 'priority' ? priorities[state(a).priority] - priorities[state(b).priority] : sort === 'date' ? (a.dueDate || '9999').localeCompare(b.dueDate || '9999') : rank[state(a).schedule] - rank[state(b).schedule]) || (a.dueDate || '9999').localeCompare(b.dueDate || '9999') || a.id.localeCompare(b.id));
+  async function open(id: string) {
+    const sequence = ++request.current; setActiveId(id); setDetails(null); setLoading(true); setError(null); setConfirmed(false);
+    try { const result = await getReminderModalData(id); if (sequence !== request.current) return; if (result.error || !result.data) throw new Error(); setDetails(result.data); }
+    catch { if (sequence === request.current) setError('Reminder details could not be loaded. Close and try again.'); }
+    finally { if (sequence === request.current) setLoading(false); }
   }
-
-  return (
-    <>
-      {/* Mobile adjustment: compact horizontal padding for phone widths */}
-      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-6">
-        <PageHeader
-          title="Service Reminders"
-          description="Select a vehicle to review overdue, upcoming, and completed service reminders."
-        />
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="p-4">
-            <div className="text-sm font-medium text-textSecondary">Registered Vehicles</div>
-            <div className="text-3xl font-bold text-ink">{initialVehicles.length}</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-sm font-medium text-textSecondary">Active Reminders</div>
-            <div className="text-3xl font-bold text-ink">{reminderCounts.overdue + reminderCounts.upcoming}</div>
-          </Card>
-          <Card className="p-4">
-            <div className="text-sm font-medium text-textSecondary">Overdue Services</div>
-            <div className="text-3xl font-bold text-redPrimary">{reminderCounts.overdue}</div>
-          </Card>
-        </div>
-
-        {initialVehicles.length === 0 && (
-          <Card className="p-12 text-center">
-            <h3 className="mb-2 text-lg font-semibold text-textPrimary">No Vehicles Yet</h3>
-            <p className="text-textSecondary mb-6">
-              Add a vehicle first to organize reminders by vehicle.
-            </p>
-            <Button href="/vehicles">View Vehicles</Button>
-          </Card>
-        )}
-
-        {initialVehicles.length > 0 && (
-          <section className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-textPrimary">Vehicle Catalog</h2>
-                <p className="text-sm text-textSecondary">
-                  Open a vehicle card to view all related reminders in one place.
-                </p>
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-grayBorder bg-darkBg px-3 py-1 text-xs font-medium tracking-[0.14em] text-textSecondary">
-                <Bell className="h-3.5 w-3.5 text-redPrimary" />
-                {initialReminders.length} total reminders
-              </div>
-            </div>
-
-            {/* Mobile adjustment: keep a single-column catalog on phones and move to two columns on tablets+ */}
-            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-              {vehicleSummaries.map((vehicle) => (
-                <VehicleCatalogCard
-                  key={vehicle.id}
-                  vehicle={vehicle}
-                  onOpen={setSelectedVehicleId}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-      </main>
-
-      <Dialog
-        isOpen={Boolean(selectedVehicle)}
-        onClose={closeVehicleModal}
-        title={selectedVehicle?.displayName || "Vehicle reminders"}
-        size="full"
-      >
-        {selectedVehicle && (
-          <div className="flex h-full min-h-0 flex-col gap-6">
-            {/* Mobile adjustment: modal content stacks vertically before switching to split layout on desktop */}
-            <div className="grid gap-4 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)]">
-              <div className="overflow-hidden rounded-xl border border-grayBorder bg-darkBg">
-                {selectedVehicle.image_url ? (
-                  <div className="relative h-full min-h-[240px] w-full">
-                    <Image
-                      src={selectedVehicle.image_url}
-                      alt={selectedVehicle.displayName}
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex min-h-[240px] items-center justify-center bg-[radial-gradient(circle_at_top,rgba(211,47,47,0.18),transparent_62%)] p-6">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-grayBorder bg-containerBg text-redPrimary">
-                      <Car className="h-10 w-10" />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-4">
-                <Card className="p-5">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.16em] text-textSecondary">Vehicle Overview</p>
-                      <h3 className="mt-2 text-2xl font-semibold text-ink">{selectedVehicle.displayName}</h3>
-                      <p className="mt-2 text-sm text-textSecondary">
-                        {selectedVehicle.plate_number || "Plate number not added"}
-                      </p>
-                      <p className="mt-1 text-sm text-textSecondary">
-                        {selectedVehicle.current_mileage != null ? formatMileage(selectedVehicle.current_mileage) : "Mileage not set"}
-                      </p>
-                    </div>
-                    <div className="rounded-full border border-redPrimary/30 bg-redPrimary/10 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-redPrimary">
-                      {selectedVehicle.reminders.length} TOTAL
-                    </div>
-                  </div>
-                </Card>
-
-                <div className="grid gap-4 md:grid-cols-3">
-                  <Card className="p-4">
-                    <div className="text-sm font-medium text-textSecondary">Overdue Services</div>
-                    <div className="mt-2 text-3xl font-bold text-redPrimary">{selectedVehicle.overdue.length}</div>
-                  </Card>
-                  <Card className="p-4">
-                    <div className="text-sm font-medium text-textSecondary">Upcoming Services</div>
-                    <div className="mt-2 text-3xl font-bold text-blue-600">{selectedVehicle.upcoming.length}</div>
-                  </Card>
-                  <Card className="p-4">
-                    <div className="text-sm font-medium text-textSecondary">Completed Services</div>
-                    <div className="mt-2 text-3xl font-bold text-green-600">{selectedVehicle.completed.length}</div>
-                  </Card>
-                </div>
-              </div>
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-              <div className="space-y-6">
-                <ReminderSection
-                  title="Overdue Services"
-                  reminders={selectedVehicle.overdue}
-                  status="overdue"
-                  onView={openReminderModal}
-                  emptyMessage="No overdue reminders for this vehicle."
-                />
-                <ReminderSection
-                  title="Upcoming Services"
-                  reminders={selectedVehicle.upcoming}
-                  status="upcoming"
-                  onView={openReminderModal}
-                  emptyMessage="No upcoming reminders for this vehicle."
-                />
-                <ReminderSection
-                  title="Completed Services"
-                  reminders={selectedVehicle.completed}
-                  status="completed"
-                  onView={openReminderModal}
-                  emptyMessage="No completed reminders for this vehicle yet."
-                />
-              </div>
-            </div>
+  function close() { if (busy.current) return; request.current++; setActiveId(null); setDetails(null); }
+  async function complete() {
+    if (!activeId || !confirmed || busy.current) return;
+    busy.current = true; setPending(true); setError(null);
+    try { const result = await completeReminderWithServiceLog(activeId); if (result.error || !result.success) throw new Error(result.error || 'Could not update reminder.'); setFeedback('Reminder updated. Review maintenance history to verify its service entry.'); busy.current = false; close(); router.refresh(); }
+    catch (failure) { setError(failure instanceof Error ? failure.message : 'Update could not be confirmed. Review history before retrying.'); }
+    finally { busy.current = false; setPending(false); }
+  }
+  const selected = initialVehicles.find(v => v.id === vehicleId);
+  return <>
+    <main className="application-workspace space-y-6 py-6 sm:py-8">
+      <PageHeader title="Service Reminders" description="Plan maintenance by calendar date and recorded mileage." actions={<Button disabled={!selected || Boolean(initialError)} onClick={() => setAdding(true)}>Add Reminder</Button>} />
+      {feedback && <p role="status" className="card p-4">{feedback}</p>}
+      {initialError ? <div role="alert" className="card space-y-3 p-6"><p>Reminders or vehicles could not be loaded. Totals and results are unavailable.</p><Button variant="secondary" onClick={() => router.refresh()}>Try again</Button></div> : <>
+        <div className="maintenance-summary-grid">{[['Active reminders', scoped.length - completed], ['Overdue or mileage reached', overdue], ['Completed reminders', completed]].map(([label, value]) => <div key={label} className="card min-w-0 p-5"><p className="text-sm text-muted">{label}</p><p className="mt-2 text-3xl font-semibold text-ink">{value}</p></div>)}</div>
+        <section className="card space-y-4 p-4 sm:p-5" aria-label="Reminder filters">
+          <div className="maintenance-toolbar-grid">
+            <label className="min-w-0 text-sm font-medium">Search<input className={maintenanceControl + ' mt-2'} value={search} onChange={e => setSearch(e.target.value)} placeholder="Service, category or vehicle" /></label>
+            <label className="min-w-0 text-sm font-medium">Vehicle<select className={maintenanceControl + ' mt-2'} value={vehicleId} onChange={e => setVehicleId(e.target.value)}><option value="">All vehicles</option>{initialVehicles.map(v => <option key={v.id} value={v.id}>{vehicleName(v)}</option>)}</select></label>
+            <label className="min-w-0 text-sm font-medium">Status<select className={maintenanceControl + ' mt-2'} value={status} onChange={e => setStatus(e.target.value)}>{[['active', 'Active'], ['all', 'All statuses'], ['overdue', 'Overdue / mileage reached'], ['due-soon', 'Due soon'], ['scheduled', 'Scheduled'], ['completed', 'Completed'], ['unknown', 'Insufficient information']].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+            <label className="min-w-0 text-sm font-medium">Sort<select className={maintenanceControl + ' mt-2'} value={sort} onChange={e => setSort(e.target.value)}><option value="schedule">Schedule</option><option value="date">Due date</option><option value="priority">Priority</option></select></label>
           </div>
-        )}
-      </Dialog>
-
-      <ReminderDetailsDialog
-        activeReminderId={activeReminderId}
-        modalData={modalData}
-        isModalLoading={isModalLoading}
-        modalError={modalError}
-        isCompleting={isCompleting}
-        onClose={closeReminderModal}
-        onMarkDone={handleMarkDone}
-      />
-    </>
-  );
+          <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted">Select a vehicle to add a reminder. Due soon means within 30 calendar days or 500 km of recorded mileage.</p><Button variant="secondary" onClick={() => { setSearch(''); setVehicleId(''); setStatus('active'); setSort('schedule'); }}>Reset Filters</Button></div>
+        </section>
+        <p role="status" className="text-sm text-muted">{rows.length} of {scoped.length} reminders shown{selected ? ' for ' + vehicleName(selected) : ''}</p>
+        {rows.length ? <div className="maintenance-record-grid">{rows.map(reminder => <article key={reminder.id} className="card flex min-w-0 flex-col p-5">
+          <p className="break-words text-sm text-muted">{reminder.vehicleName || initialVehicles.find(v => v.id === reminder.vehicleId) && vehicleName(initialVehicles.find(v => v.id === reminder.vehicleId)!) || 'Vehicle unavailable'}</p>
+          <h2 className="mt-2 break-words text-lg font-semibold text-ink">{reminder.title || reminder.reminderType}</h2><p className="mt-1 break-words text-sm text-muted">{reminder.serviceCategory}</p>
+          <ReminderSchedule reminder={reminder} mileage={mileage(reminder)} /><p className="mt-3 break-words text-sm text-muted">{reminder.description}</p>
+          <div className="mt-auto pt-5"><Button variant="secondary" onClick={() => open(reminder.id)} aria-label={'View details for ' + (reminder.title || reminder.reminderType)}>View details</Button></div>
+        </article>)}</div> : <div className="card space-y-2 p-8 text-center"><h2 className="text-lg font-semibold">{scoped.length ? 'No matching reminders' : 'No reminders yet'}</h2><p className="text-muted">{scoped.length ? 'Try another search or reset your filters.' : selected ? 'Add a reminder to plan your next service.' : 'Choose a vehicle to add a reminder, or add a vehicle in My Garage.'}</p>{!initialVehicles.length && <Button href="/vehicles">My Garage</Button>}</div>}
+      </>}
+    </main>
+    <Dialog isOpen={Boolean(activeId)} onClose={close} showCloseButton={!pending} title={details?.reminder.title || 'Reminder details'} size="lg">
+      {loading && <LoadingState mode="inline" label="Loading reminder..." />}{error && <p role="alert" className="mb-4 rounded-lg bg-accentSoft p-3 text-accent">{error}</p>}
+      {details && <div className="space-y-4">
+        <VehicleImage src={details.vehicle?.imageUrl} name={details.vehicle?.displayName || 'Vehicle unavailable'} contained />
+        <p className="break-words font-semibold">{details.vehicle?.displayName || 'Vehicle unavailable'} &middot; {details.vehicle?.plateNumber || 'Plate not recorded'}</p>
+        <p className="text-sm text-muted">Recorded mileage: {formatRecordedMileage(details.vehicle?.currentMileage)} &middot; Last service: {calendarDate(details.vehicle?.lastServiceDate)}</p>
+        <p className="break-words text-sm">{details.reminder.reminderType} &middot; {details.reminder.serviceCategory}</p>
+        <ReminderSchedule reminder={details.reminder} mileage={details.vehicle?.currentMileage} /><p className="whitespace-pre-wrap break-words text-sm text-muted">{details.reminder.description}</p>{details.reminder.notes && <p className="whitespace-pre-wrap break-words text-sm">Notes: {details.reminder.notes}</p>}
+        {reminderPresentation(details.reminder).schedule !== 'completed' && <div className="space-y-3 rounded-lg border border-line p-4">
+          <p className="text-sm text-muted">Confirming completion marks this reminder complete and attempts to add a service dated {calendarDate(new Date().toISOString().slice(0, 10))} with PHP 0 cost and the recorded vehicle mileage (or the reminder threshold, then 0 if unavailable). It may generate a next reminder. Review the service entry afterwards.</p>
+          <label className="flex min-h-11 items-start gap-3 text-sm"><input type="checkbox" className="mt-1 h-5 w-5 shrink-0" checked={confirmed} disabled={pending} onChange={e => setConfirmed(e.target.checked)} />I confirm this service was performed and accept these recorded details.</label>
+          <div className="flex flex-wrap gap-3"><Button disabled={!confirmed || pending} onClick={complete}>{pending ? 'Updating...' : 'Confirm service completion'}</Button>{details.vehicle && !pending && <Button variant="secondary" href={'/vehicles/' + details.vehicle.id + '/maintenance/add'}>Log service with actual details</Button>}</div>
+        </div>}
+        <Button variant="secondary" onClick={close} disabled={pending}>Close</Button>
+      </div>}
+    </Dialog>
+    {selected && <AddReminderModal isOpen={adding} onClose={() => setAdding(false)} onSuccess={() => setFeedback('Reminder created.')} vehicleId={selected.id} vehicleName={vehicleName(selected)} />}
+  </>;
 }
-

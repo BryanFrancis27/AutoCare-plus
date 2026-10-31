@@ -3,6 +3,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Reminder } from "@/types";
 import { calculateDaysUntilDue, calculateNextDue, getMaintenanceCategoryById } from "@/lib/maintenance";
+import { readComplete } from '@/lib/maintenance/read-complete';
+import { validateReminder } from '@/lib/maintenance/forms';
 import { revalidatePath } from "next/cache";
 
 /**
@@ -70,22 +72,16 @@ export async function getAllReminders(): Promise<{
       return { data: null, error: "Unauthorized" };
     }
 
-    const { data, error } = await supabase
-      .from("reminders")
-      .select("*, vehicles(make, model, year, plate_number)")
-      .eq("user_id", user.id)
-      .order("due_date", { ascending: true, nullsFirst: false });
-
-    if (error) {
-      console.error("Error fetching reminders:", error);
-      return { data: null, error: error.message };
-    }
+    const data = await readComplete<any>((from, to) => supabase
+      .from('reminders').select('*, vehicles(make, model, year, plate_number, current_mileage)', { count: 'exact' })
+      .eq('user_id', user.id).order('due_date', { ascending: true, nullsFirst: false }).order('id').range(from, to));
 
     const reminders: Reminder[] = data.map((record) => ({
       id: record.id,
       userId: record.user_id,
       vehicleId: record.vehicle_id,
       vehicleName: getVehicleDisplayName(record.vehicles),
+      currentMileage: record.vehicles?.current_mileage ?? null,
       title: record.title,
       reminderType: record.reminder_type || record.title,
       serviceCategory: record.service_category,
@@ -123,17 +119,9 @@ export async function getRemindersForVehicle(
       return { data: null, error: "Unauthorized" };
     }
 
-    const { data, error } = await supabase
-      .from("reminders")
-      .select("*")
-      .eq("vehicle_id", vehicleId)
-      .eq("user_id", user.id)
-      .order("due_date", { ascending: true, nullsFirst: false });
-
-    if (error) {
-      console.error("Error fetching vehicle reminders:", error);
-      return { data: null, error: error.message };
-    }
+    const data = await readComplete<any>((from, to) => supabase.from('reminders')
+      .select('*', { count: 'exact' }).eq('vehicle_id', vehicleId).eq('user_id', user.id)
+      .order('due_date', { ascending: true, nullsFirst: false }).order('id').range(from, to));
 
     const reminders: Reminder[] = data.map((record) => ({
       id: record.id,
@@ -385,7 +373,7 @@ export async function getReminderModalData(
       return { data: { reminder, vehicle: null }, error: null };
     }
 
-    const [{ data: vehicleRow, error: vehicleError }, { data: latestService }] = await Promise.all([
+    const [{ data: vehicleRow, error: vehicleError }, { data: latestService, error: serviceError }] = await Promise.all([
       supabase
         .from("vehicles")
         .select("*")
@@ -402,8 +390,8 @@ export async function getReminderModalData(
         .maybeSingle(),
     ]);
 
-    if (vehicleError) {
-      return { data: null, error: vehicleError.message };
+    if (vehicleError || serviceError) {
+      return { data: null, error: vehicleError?.message ?? serviceError?.message ?? "Could not load vehicle history." };
     }
 
     return {
@@ -443,6 +431,10 @@ export async function createReminder(
       return { data: null, error: "Unauthorized" };
     }
 
+    const validation = validateReminder({ ...input, dueDate: input.dueDate ?? '', dueMileage: input.dueMileage === undefined ? '' : String(input.dueMileage), priority: input.priority ?? 'medium', notes: input.notes ?? '' });
+    if (Object.keys(validation).length) return { data: null, error: Object.values(validation)[0] ?? 'Invalid reminder.' };
+    const ownership = await supabase.from('vehicles').select('id').eq('id', input.vehicleId).eq('user_id', user.id).single();
+    if (ownership.error || !ownership.data) return { data: null, error: 'Vehicle is unavailable for this account.' };
     const { data, error } = await supabase
       .from("reminders")
       .insert({

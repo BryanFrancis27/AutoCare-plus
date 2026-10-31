@@ -1,16 +1,7 @@
-import { PageHeader } from "@/components/layout";
-import { AddMaintenanceForm } from "./AddMaintenanceForm";
-
-type Props = { params: { vehicleId: string } };
-
-export default function AddMaintenancePage({ params }: Props) {
-  return (
-    <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-6">
-      <PageHeader
-        title="Log Maintenance"
-        description="Record a completed service or maintenance task"
-      />
-      <AddMaintenanceForm vehicleId={params.vehicleId} />
-    </main>
-  );
+import { PageHeader } from '@/components/layout';
+import { getVehicleById } from '@/app/actions/vehicles';
+import { AddMaintenanceForm } from './AddMaintenanceForm';
+export default async function AddMaintenancePage({ params }: { params: { vehicleId: string } }) {
+  const { data: vehicle, error } = await getVehicleById(params.vehicleId);
+  return <main className="application-workspace space-y-6"><PageHeader title="Log Maintenance" description="Record a completed service or maintenance task" />{error || !vehicle ? <p role="alert">Vehicle could not be loaded. Return to My Garage and try again.</p> : <AddMaintenanceForm vehicleId={vehicle.id} vehicle={{ id: vehicle.id, label: [vehicle.year, vehicle.make, vehicle.model, vehicle.plate_number].filter(Boolean).join(' '), currentMileage: vehicle.current_mileage }} />}</main>;
 }
