@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const data = state.status === 'ready' ? state.data : null;
 
   return <>
-    <AddVehicleModal isOpen={addVehicleOpen} onClose={() => setAddVehicleOpen(false)} mode="create" onSaved={() => { setAddVehicleOpen(false); void refresh(true); }} />
+    <AddVehicleModal isOpen={addVehicleOpen} onClose={() => setAddVehicleOpen(false)} onSaved={() => { setAddVehicleOpen(false); void refresh(true); }} />
     <LogMaintenanceModal isOpen={logMaintenanceOpen} onClose={() => setLogMaintenanceOpen(false)} onSuccess={() => { void refresh(true); }} />
     <ServiceExpensesModal isOpen={serviceExpensesOpen} onClose={() => setServiceExpensesOpen(false)} />
 

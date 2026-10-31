@@ -5,7 +5,7 @@ export interface GarageVehicle {
   id: string;
   make: string;
   model: string;
-  year: number;
+  year: number | null;
   plate_number: string | null;
   color?: string | null;
   vehicle_type?: string | null;

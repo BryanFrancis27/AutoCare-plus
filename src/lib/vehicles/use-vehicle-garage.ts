@@ -11,7 +11,6 @@ export function useVehicleGarage(vehicles: GarageVehicle[]) {
   const [localVehicles, setLocalVehicles] = useState(vehicles);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [vehicleToView, setVehicleToView] = useState<GarageVehicle | null>(null);
-  const [vehicleToEdit, setVehicleToEdit] = useState<GarageVehicle | null>(null);
   const [vehicleToDelete, setVehicleToDelete] = useState<GarageVehicle | null>(null);
   const [vehicleToLogMaintenance, setVehicleToLogMaintenance] = useState<GarageVehicle | null>(null);
   const [historyVehicle, setHistoryVehicle] = useState<GarageVehicle | null>(null);
@@ -103,7 +102,7 @@ export function useVehicleGarage(vehicles: GarageVehicle[]) {
   }
   return {
     localVehicles, isAddModalOpen, setIsAddModalOpen, vehicleToView, setVehicleToView,
-    vehicleToEdit, setVehicleToEdit, vehicleToDelete, beginDelete, closeDelete,
+    vehicleToDelete, beginDelete, closeDelete,
     vehicleToLogMaintenance, setVehicleToLogMaintenance, historyVehicle, historyEntries,
     isHistoryLoading, historyError, isDeleting, actionError, feedback, expenseSummary,
     upsertLocalVehicle, handleDeleteVehicle, openServiceHistory, closeServiceHistory, maintenanceSaved,

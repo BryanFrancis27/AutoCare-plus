@@ -1,9 +1,9 @@
 'use server';
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { generateInitialReminders } from "./templates";
+import { normalizeVehicle } from "@/lib/vehicles/vehicle-model";
 
 const VEHICLE_IMAGE_BUCKET = "vehicles";
 const DEFAULT_MAX_VEHICLE_IMAGE_SIZE_MB = 5;
@@ -12,52 +12,8 @@ const MAX_VEHICLE_IMAGE_SIZE_MB = Number(
 );
 const MAX_VEHICLE_IMAGE_SIZE = MAX_VEHICLE_IMAGE_SIZE_MB * 1024 * 1024;
 
-async function ensureVehicleImageBucket() {
-  const supabaseAdmin = createSupabaseAdminClient();
-  const { data: bucket, error: bucketError } = await supabaseAdmin.storage.getBucket(
-    VEHICLE_IMAGE_BUCKET
-  );
-
-  if (bucket && !bucketError) {
-    if (!bucket.public) {
-      const { error: updateBucketError } = await supabaseAdmin.storage.updateBucket(
-        VEHICLE_IMAGE_BUCKET,
-        {
-          public: true,
-          fileSizeLimit: MAX_VEHICLE_IMAGE_SIZE,
-          allowedMimeTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"],
-        }
-      );
-
-      if (updateBucketError) {
-        return { error: updateBucketError.message };
-      }
-    }
-
-    return { error: null };
-  }
-
-  if (bucketError && !/not found/i.test(bucketError.message)) {
-    return { error: bucketError.message };
-  }
-
-  const { error: createBucketError } = await supabaseAdmin.storage.createBucket(
-    VEHICLE_IMAGE_BUCKET,
-    {
-      public: true,
-      fileSizeLimit: MAX_VEHICLE_IMAGE_SIZE,
-      allowedMimeTypes: ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"],
-    }
-  );
-
-  if (createBucketError && !/already exists/i.test(createBucketError.message)) {
-    return { error: createBucketError.message };
-  }
-
-  return { error: null };
-}
-
 export async function getVehicleById(vehicleId: string) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vehicleId)) return { data: null, error: "Vehicle not found", status: "missing" as const };
   const supabase = createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -70,13 +26,16 @@ export async function getVehicleById(vehicleId: string) {
     .select("*")
     .eq("id", vehicleId)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (error) {
-    return { data: null, error: error.message };
+    return { data: null, error: "Unable to load vehicle. Please try again.", status: "error" as const };
   }
 
-  return { data, error: null };
+  if (!data) return { data: null, error: "Vehicle not found", status: "missing" as const };
+  const vehicle = normalizeVehicle(data);
+  vehicle.image_url = await refreshVehiclePhoto(vehicle.image_url, user.id);
+  return { data: vehicle, error: null };
 }
 
 export async function getUserVehicles() {
@@ -97,22 +56,10 @@ export async function getUserVehicles() {
     return { data: null, error: error.message };
   }
 
-  const normalizedVehicles = (data ?? []).map((vehicle: any) => ({
-    id: vehicle.id,
-    make: vehicle.make,
-    model: vehicle.model,
-    year: vehicle.year,
-    plate_number: vehicle.plate_number ?? vehicle.license_plate ?? null,
-    color: vehicle.color ?? null,
-    vehicle_type: vehicle.vehicle_type ?? null,
-    powertrain: vehicle.powertrain ?? null,
-    transmission: vehicle.transmission ?? null,
-    current_mileage: vehicle.current_mileage ?? null,
-    purchase_date: vehicle.purchase_date ?? null,
-    purchase_price: vehicle.purchase_price ?? null,
-    notes: vehicle.notes ?? null,
-    image_url: vehicle.image_url ?? vehicle.photo_url ?? vehicle.image ?? null,
-    created_at: vehicle.created_at ?? null,
+  const normalizedVehicles = await Promise.all((data ?? []).map(async (row: Record<string, unknown>) => {
+    const vehicle = normalizeVehicle(row);
+    vehicle.image_url = await refreshVehiclePhoto(vehicle.image_url, user.id);
+    return vehicle;
   }));
 
   return { data: normalizedVehicles, error: null };
@@ -129,10 +76,10 @@ export async function createVehicle(vehicleData: {
   powertrain?: string;
   transmission?: string;
   currentMileage?: number;
-  purchaseDate?: string;
-  purchasePrice?: number;
+  purchaseDate?: string | null;
+  purchasePrice?: number | null;
   notes?: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
 }) {
   const supabase = createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -241,8 +188,8 @@ export async function updateVehicle(vehicleData: {
   powertrain?: string;
   transmission?: string;
   currentMileage?: number;
-  purchaseDate?: string;
-  purchasePrice?: number;
+  purchaseDate?: string | null;
+  purchasePrice?: number | null;
   notes?: string;
   imageUrl?: string | null;
 }) {
@@ -393,7 +340,6 @@ export async function deleteVehicle(vehicleId: string) {
 
 export async function uploadVehicleImage(formData: FormData) {
   const supabase = createSupabaseServerClient();
-  const supabaseAdmin = createSupabaseAdminClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
   if (authError || !user) {
@@ -408,7 +354,7 @@ export async function uploadVehicleImage(formData: FormData) {
 
   const file = fileEntry as File;
 
-  if (!file.type.startsWith("image/")) {
+  if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
     return { data: null, error: "Please upload a valid image file." };
   }
 
@@ -419,18 +365,12 @@ export async function uploadVehicleImage(formData: FormData) {
     };
   }
 
-  const bucketResult = await ensureVehicleImageBucket();
-
-  if (bucketResult.error) {
-    return { data: null, error: bucketResult.error };
-  }
-
   const fileExtension = file.name.split(".").pop()?.toLowerCase();
   const safeExtension = fileExtension && /^[a-z0-9]+$/.test(fileExtension) ? fileExtension : "jpg";
   const filePath = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${safeExtension}`;
   const fileBuffer = await file.arrayBuffer();
 
-  const { error: uploadError } = await supabaseAdmin.storage
+  const { error: uploadError } = await supabase.storage
     .from(VEHICLE_IMAGE_BUCKET)
     .upload(filePath, fileBuffer, {
       contentType: file.type,
@@ -438,22 +378,38 @@ export async function uploadVehicleImage(formData: FormData) {
     });
 
   if (uploadError) {
-    return { data: null, error: uploadError.message };
+    return { data: null, error: "Photo upload is unavailable. Please try again or save without a photo." };
   }
 
-  const { data } = supabaseAdmin.storage.from(VEHICLE_IMAGE_BUCKET).getPublicUrl(filePath);
-
-  const { data: signedData } = await supabaseAdmin.storage
+  const { data: signedData } = await supabase.storage
     .from(VEHICLE_IMAGE_BUCKET)
     .createSignedUrl(filePath, 60 * 60 * 24 * 30);
+
+  if (!signedData?.signedUrl) {
+    return { data: null, error: "Photo preview is unavailable. Please try again or save without a photo." };
+  }
 
   return {
     data: {
       filePath,
-      publicUrl: data.publicUrl,
-      displayUrl: signedData?.signedUrl ?? data.publicUrl,
+      displayUrl: signedData?.signedUrl ?? null,
     },
     error: null,
   };
 }
 
+
+async function refreshVehiclePhoto(source: string | null | undefined, userId: string): Promise<string | null> {
+  if (!source) return source ?? null;
+  try {
+    const url = new URL(source);
+    if (url.origin !== new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).origin) return source;
+    const prefix = '/storage/v1/object/sign/vehicles/';
+    if (!url.pathname.startsWith(prefix)) return source;
+    const objectPath = decodeURIComponent(url.pathname.slice(prefix.length));
+    if (!objectPath.startsWith(userId + '/') || objectPath.split('/').some(part => part === '..' || part === '.')) return source;
+    const supabase = createSupabaseServerClient();
+    const { data } = await supabase.storage.from(VEHICLE_IMAGE_BUCKET).createSignedUrl(objectPath, 60 * 60 * 24 * 30);
+    return data?.signedUrl ?? source;
+  } catch { return source; }
+}

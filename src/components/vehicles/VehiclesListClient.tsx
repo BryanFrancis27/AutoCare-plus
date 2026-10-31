@@ -22,7 +22,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
   const garage = useVehicleGarage(vehicles);
   const {
     localVehicles, isAddModalOpen, setIsAddModalOpen, vehicleToView, setVehicleToView,
-    vehicleToEdit, setVehicleToEdit, vehicleToDelete, beginDelete, closeDelete,
+    vehicleToDelete, beginDelete, closeDelete,
     vehicleToLogMaintenance, setVehicleToLogMaintenance, historyVehicle, historyEntries,
     isHistoryLoading, historyError, isDeleting, actionError, feedback, expenseSummary,
     upsertLocalVehicle, handleDeleteVehicle, openServiceHistory, closeServiceHistory, maintenanceSaved,
@@ -63,7 +63,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
         </section> : <>
           <GarageToolbar query={query} vehicleType={vehicleType} sort={effectiveSort} types={types} canSortRecent={canSortRecent} matchingCount={visibleVehicles.length} total={localVehicles.length} onQuery={setQuery} onType={setVehicleType} onSort={setSort} onReset={resetFilters} />
           {visibleVehicles.length ? <div className="garage-vehicle-grid">
-            {visibleVehicles.map(vehicle => <GarageVehicleCard key={vehicle.id} vehicle={vehicle} featured={visibleVehicles.length === 1} onView={setVehicleToView} onEdit={setVehicleToEdit} onDelete={beginDelete} onLogMaintenance={setVehicleToLogMaintenance} onServiceHistory={openServiceHistory} />)}
+            {visibleVehicles.map(vehicle => <GarageVehicleCard key={vehicle.id} vehicle={vehicle} featured={visibleVehicles.length === 1} onView={setVehicleToView}  onDelete={beginDelete} onLogMaintenance={setVehicleToLogMaintenance} onServiceHistory={openServiceHistory} />)}
           </div> : <section className="card px-6 py-8 text-center">
             <SearchX className="mx-auto h-8 w-8 text-muted" aria-hidden="true" /><h2 className="mt-3 break-words text-lg font-semibold text-ink">No vehicles match your search</h2><p className="mt-2 text-sm text-muted">Try a different make, model, year or plate, or reset your filters.</p><button type="button" onClick={resetFilters} className="button-secondary mt-4 min-h-11">Reset Filters</button>
           </section>}
@@ -75,13 +75,7 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
         onClose={() => setIsAddModalOpen(false)}
         onSaved={upsertLocalVehicle}
       />
-      <AddVehicleModal
-        isOpen={Boolean(vehicleToEdit)}
-        onClose={() => setVehicleToEdit(null)}
-        mode="edit"
-        vehicle={vehicleToEdit}
-        onSaved={upsertLocalVehicle}
-      />
+
 
       <Dialog
         isOpen={Boolean(vehicleToView)}
@@ -139,7 +133,9 @@ export function VehiclesListClient({ vehicles, error }: VehiclesListClientProps)
               <p className="text-ink text-sm mt-1 whitespace-pre-wrap break-words">{vehicleToView.notes || "No notes"}</p>
             </div>
 
-            <div className="flex justify-stretch sm:justify-end">
+            <div className="flex flex-wrap justify-between gap-3">
+              <a href={`/vehicles/${vehicleToView.id}`} className="button-secondary min-h-11">Open Vehicle Details</a>
+              <a href={`/vehicles/${vehicleToView.id}/edit`} className="button-secondary min-h-11">Edit Vehicle</a>
               <button
                 type="button"
                 onClick={() => setVehicleToView(null)}

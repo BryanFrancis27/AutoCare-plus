@@ -459,15 +459,28 @@ export async function getMaintenanceStats(vehicleId: string): Promise<{
       return { data: null, error: "Unauthorized" };
     }
 
-    const { data, error } = await supabase
-      .from("maintenance_logs")
-      .select("service_date, cost, next_due_date")
-      .eq("vehicle_id", vehicleId)
-      .eq("user_id", user.id);
-
-    if (error) {
-      console.error("Error fetching maintenance stats:", error);
-      return { data: null, error: error.message };
+    // Page through the selected vehicle's records so totals are not limited by
+    // Supabase's response cap. Cost arithmetic below remains unchanged.
+    const data: { service_date: string | null; cost: number | null; next_due_date: string | null }[] = [];
+    const pageSize = 500;
+    let expectedCount: number | null = null;
+    while (expectedCount === null || data.length < expectedCount) {
+      const result = await supabase
+        .from("maintenance_logs")
+        .select("id, service_date, cost, next_due_date", { count: "exact" })
+        .eq("vehicle_id", vehicleId)
+        .eq("user_id", user.id)
+        .order("service_date", { ascending: false, nullsFirst: false })
+        .order("id", { ascending: true })
+        .range(data.length, data.length + pageSize - 1);
+      if (result.error || result.count === null || !result.data || (expectedCount !== null && expectedCount !== result.count)) {
+        return { data: null, error: "Maintenance information could not be loaded completely. Please try again." };
+      }
+      expectedCount = result.count;
+      if (result.data.length === 0 && data.length < expectedCount) {
+        return { data: null, error: "Maintenance information could not be loaded completely. Please try again." };
+      }
+      data.push(...result.data);
     }
 
     const totalRecords = data.length;

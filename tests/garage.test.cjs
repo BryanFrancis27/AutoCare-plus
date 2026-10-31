@@ -148,15 +148,16 @@ function buttons(element, output = []) {
   React.Children.forEach(element.props.children, child => buttons(child, output));
   return output;
 }
-test('card actions dispatch their exact vehicle to existing workflow callbacks, without deleting directly', () => {
+test('card workflows dispatch their exact vehicle while Edit uses its canonical route', () => {
   const received = [];
   const target = vehicle('action-target');
   const callbacks = Object.fromEntries(Object.keys(handlers).map(name => [name, value => received.push([name, value.id])]));
   const tree = GarageVehicleCard({ vehicle: target, ...callbacks });
   const controls = buttons(tree);
-  assert.equal(controls.length, 5);
+  assert.equal(controls.length, 4);
+  assert.match(renderToStaticMarkup(React.createElement(GarageVehicleCard, {vehicle:target,...handlers})), new RegExp('href="/vehicles/' + target.id + '/edit"'));
   controls.forEach(control => control.props.onClick());
-  assert.deepEqual(received, [['onView', target.id], ['onLogMaintenance', target.id], ['onServiceHistory', target.id], ['onEdit', target.id], ['onDelete', target.id]]);
+  assert.deepEqual(received, [['onView', target.id], ['onLogMaintenance', target.id], ['onServiceHistory', target.id], ['onDelete', target.id]]);
 });
 
 test('vehicle photos render existing uploads, with placeholders for missing or malformed URLs', () => {
