@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { GuardedLink } from "./NavigationGuard";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { LayoutDashboard, Car, Bell, User, X } from "lucide-react";
@@ -68,9 +68,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           <div className="space-y-1">
             {navItems.map(item => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)} aria-current={active ? "page" : undefined} className={`flex min-h-12 items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${active ? "border-accent/15 bg-accentSoft text-accent" : "border-transparent text-muted hover:bg-surfaceHover hover:text-ink"}`}>
+              return <GuardedLink key={item.href} href={item.href} onNavigate={() => setSidebarOpen(false)} aria-current={active ? "page" : undefined} className={`flex min-h-12 items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${active ? "border-accent/15 bg-accentSoft text-accent" : "border-transparent text-muted hover:bg-surfaceHover hover:text-ink"}`}>
                 <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />{item.label}
-              </Link>;
+              </GuardedLink>;
             })}
           </div>
         </nav>

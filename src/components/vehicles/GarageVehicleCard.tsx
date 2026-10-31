@@ -8,12 +8,11 @@ interface GarageVehicleCardProps {
   vehicle: GarageVehicle;
   featured?: boolean;
   onView: (vehicle: GarageVehicle) => void;
-  onEdit: (vehicle: GarageVehicle) => void;
   onDelete: (vehicle: GarageVehicle) => void;
   onLogMaintenance: (vehicle: GarageVehicle) => void;
   onServiceHistory: (vehicle: GarageVehicle) => void;
 }
-export function GarageVehicleCard({ vehicle, featured = false, onView, onEdit, onDelete, onLogMaintenance, onServiceHistory }: GarageVehicleCardProps) {
+export function GarageVehicleCard({ vehicle, featured = false, onView, onDelete, onLogMaintenance, onServiceHistory }: GarageVehicleCardProps) {
   const identity = vehicleIdentity(vehicle);
   return <article className={`flex h-full min-w-0 flex-col overflow-hidden rounded-card border border-line bg-surface shadow-card transition-colors hover:border-accent/30 ${featured ? "garage-vehicle-card-featured" : ""}`} aria-labelledby={`vehicle-${vehicle.id}-title`}>
     <VehicleImage src={vehicle.image_url} name={identity} featured={featured} />
@@ -36,7 +35,7 @@ export function GarageVehicleCard({ vehicle, featured = false, onView, onEdit, o
           <button type="button" onClick={() => onServiceHistory(vehicle)} aria-label={`Service and expenses for ${identity}`} className="flex min-h-11 items-center justify-center gap-2 rounded-lg border border-controlBorder px-3 py-2 text-sm font-medium text-ink hover:bg-canvas"><ReceiptText className="h-4 w-4 shrink-0" aria-hidden="true" />Service &amp; Expenses</button>
         </div>
         <div className="flex flex-wrap justify-between gap-2 border-t border-line pt-2">
-          <button type="button" onClick={() => onEdit(vehicle)} aria-label={`Edit vehicle: ${identity}`} className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium text-ink hover:bg-canvas"><Pencil className="h-4 w-4" aria-hidden="true" />Edit Vehicle</button>
+          <a href={`/vehicles/${vehicle.id}/edit`} aria-label={`Edit vehicle: ${identity}`} className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium text-ink hover:bg-canvas"><Pencil className="h-4 w-4" aria-hidden="true" />Edit Vehicle</a>
           <button type="button" onClick={() => onDelete(vehicle)} aria-label={`Delete vehicle: ${identity}`} className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium text-accent hover:bg-accentSoft"><Trash2 className="h-4 w-4" aria-hidden="true" />Delete Vehicle</button>
         </div>
       </div>

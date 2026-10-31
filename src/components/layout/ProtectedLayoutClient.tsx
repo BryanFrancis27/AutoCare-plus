@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { NavigationGuardProvider } from './NavigationGuard';
 import { MotionConfig } from 'framer-motion';
 import { Sidebar } from '@/components/layout';
 import { DashboardHeader } from '@/components/dashboard';
@@ -16,6 +17,7 @@ export function ProtectedLayoutClient({ children, userName, userEmail }: Protect
 
   return (
     <MotionConfig reducedMotion="user">
+    <NavigationGuardProvider>
     <div className="min-h-screen bg-canvas text-ink">
       <a href="#main-content" className="skip-link">Skip to content</a>
       <DashboardHeader
@@ -34,6 +36,7 @@ export function ProtectedLayoutClient({ children, userName, userEmail }: Protect
         </main>
       </div>
     </div>
+    </NavigationGuardProvider>
     </MotionConfig>
   );
 }

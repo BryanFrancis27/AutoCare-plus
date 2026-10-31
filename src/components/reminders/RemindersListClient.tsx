@@ -14,7 +14,7 @@ type VehicleListItem = {
   id: string;
   make: string;
   model: string;
-  year: number;
+  year: number | null;
   plate_number: string | null;
   current_mileage: number | null;
   image_url?: string | null;

@@ -264,3 +264,16 @@ textarea,
   outline: 2px solid theme('colors.accent');
   outline-offset: 3px;
 }
+
+/* Vehicle editing follows available workspace width, including the shell offset. */
+.vehicle-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+@container workspace (min-width: 62rem) {
+  .vehicle-editor-grid {
+    grid-template-columns: minmax(0, 1.8fr) minmax(18rem, 1fr);
+  }
+}

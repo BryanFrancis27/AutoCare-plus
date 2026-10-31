@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 
 interface DialogProps {
@@ -33,6 +33,7 @@ export function Dialog({
   const [mounted, setMounted] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     setMounted(true);
@@ -75,16 +76,16 @@ export function Dialog({
       {isOpen && (
         <>
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={reducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: reducedMotion ? 0 : 0.2 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000]"
             onClick={onClose}
           />
 
           {/* Mobile adjustment: tighter outer padding on small screens */}
-          <div className="fixed inset-0 z-[1001] flex items-center justify-center p-2 sm:p-4">
+          <div className="fixed inset-0 z-[1001] flex items-center justify-center p-2 sm:p-4" onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
             <motion.div
               ref={dialogRef}
               role="dialog"
@@ -92,10 +93,10 @@ export function Dialog({
               aria-labelledby={title ? titleId : undefined}
               aria-label={title ? undefined : "Dialog"}
               tabIndex={-1}
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={reducedMotion ? false : { opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: reducedMotion ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
               className={`bg-containerBg rounded-2xl shadow-2xl border border-grayBorder w-full ${size === "full" ? "flex flex-col overflow-hidden" : "overflow-y-auto"} ${sizeClasses[size]} ${size !== "full" ? "max-h-[90vh]" : ""}`}
               onClick={(e) => e.stopPropagation()}
             >
